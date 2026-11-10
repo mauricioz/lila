@@ -42,6 +42,8 @@ def changed_spans(root: Path, base: str, head: str) -> dict[str, list[tuple[int,
     diff = subprocess.run(
         [
             "git",
+            "-c",
+            f"safe.directory={root.as_posix()}",
             "diff",
             "--unified=0",
             "--no-color",

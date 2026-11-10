@@ -12,6 +12,8 @@ Status: in progress · Owner: @mauricioz · Branch: `devs/mauri/chore/lila-workf
 
 - [x] `scripts/pr.py` with `check`, `check --pr <n>` and `open`
 - [x] Target derived from the `origin` remote; the upstream is refused explicitly
+- [x] Git reads trust the checkout (`safe.directory`), so the tool works in the
+      ESP-IDF container where the tree is owned by another user
 - [x] Token read from `GITHUB_TOKEN`/`GH_TOKEN`, never printed or stored
 - [x] `PR target guard` step in `.github/workflows/ci.yml`
 - [x] Rule written in `process/WORKFLOW.md`, `process/standards/ci-release.md`,

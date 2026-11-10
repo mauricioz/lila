@@ -109,9 +109,22 @@ def json_text(payload: dict) -> str:
 
 class RepositoryInspectionTests(unittest.TestCase):
     def test_origin_points_at_the_lila_repository(self):
+        if not (ROOT / ".git").exists():
+            self.skipTest("not a git checkout")
         self.assertEqual(pr.origin_slug(ROOT), "mauricioz/lila")
 
+    def test_git_command_trusts_only_this_checkout(self):
+        command = pr.git_command(ROOT, "remote", "get-url", "origin")
+        self.assertEqual(command[0], "git")
+        self.assertEqual(command[1], "-c")
+        self.assertEqual(
+            command[2], f"safe.directory={ROOT.as_posix()}"
+        )
+        self.assertEqual(command[3:], ["remote", "get-url", "origin"])
+
     def test_current_branch_is_not_main(self):
+        if not (ROOT / ".git").exists():
+            self.skipTest("not a git checkout")
         self.assertNotEqual(pr.current_branch(ROOT), "main")
 
     def test_slug_is_read_from_a_remote(self):

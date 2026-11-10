@@ -52,9 +52,21 @@ def parse_repository_slug(url: str) -> str | None:
     return None
 
 
+def git_command(root: Path, *arguments: str) -> list[str]:
+    """Build a git command line that trusts exactly this checkout."""
+    return ["git", "-c", f"safe.directory={root.as_posix()}", *arguments]
+
+
 def git_output(root: Path, *arguments: str) -> str:
+    """Run a read-only git command, trusting the checkout we were pointed at.
+
+    CI containers often check the repository out as a different user, which
+    makes git refuse to read it ("dubious ownership"). Declaring this exact
+    directory as safe keeps the tool working there; no other directory is
+    trusted.
+    """
     result = subprocess.run(
-        ["git", *arguments],
+        git_command(root, *arguments),
         cwd=root,
         capture_output=True,
         check=False,
