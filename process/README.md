@@ -1,8 +1,9 @@
 # Lila process
 
-Everything a contributor needs to change this repository safely. Lila is a fork
-of [XiaoZhi AI Chatbot](https://github.com/78/xiaozhi-esp32); upstream behaviour
-stays intact unless a spec says otherwise.
+Everything a contributor needs to change this repository safely. Lila is a
+personal fork of [XiaoZhi AI Chatbot](https://github.com/78/xiaozhi-esp32), kept
+as a standalone repository; upstream behaviour stays intact unless a spec says
+otherwise.
 
 ## Golden rules
 

@@ -3,10 +3,12 @@
 ## Structure
 
 - **DOC-1** The root `README.md` is Lila's front page: identity, credit to the
-  upstream project, what Lila adds, quick start, then the upstream documentation
-  kept intact below a horizontal rule.
-- **DOC-2** Do not rewrite upstream sections to fit Lila. Add Lila sections and
-  keep the upstream text recognisable so users can follow upstream tutorials.
+  upstream project, what Lila adds, quick start, the development workflow, and a
+  short reference to the upstream project.
+- **DOC-2** Do not paste upstream documentation into this repository. Link to
+  [78/xiaozhi-esp32](https://github.com/78/xiaozhi-esp32) instead, and keep the
+  Lila page about Lila. Upstream translations (`README_zh.md`, `README_ja.md`)
+  are not mirrored here either.
 - **DOC-3** Board documentation lives in `main/boards/<board>/README.md` and
   covers: hardware and wiring, build commands, configuration, optional tools, and
   known limitations.

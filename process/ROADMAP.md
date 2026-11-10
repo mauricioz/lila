@@ -13,7 +13,7 @@ all opt-in so a stock configuration still behaves like upstream.
 
 | Feature | Status | Where | Notes |
 | --- | --- | --- | --- |
-| Lila identity and docs | ✅ | `README.md`, `main/boards/wk-esp32s3-dev/README.md` | Fork credited to upstream, features listed |
+| Lila identity and docs | ✅ | `README.md`, `main/boards/wk-esp32s3-dev/README.md` | Lila-only front page, upstream credited by link |
 | `.env`-driven build wrapper | ✅ | `scripts/build_lila.py`, `.env.example` | Board, variant, language, wake word, panel, keys, zip; `--dry-run` |
 | Custom MultiNet wake word | ✅ | `scripts/build.py`, `scripts/build_default_assets.py`, `main/audio/wake_words/custom_wake_word.cc` | `--wake-word custom:<word>`; default `custom:lila` |
 | Raw sdkconfig overrides | ✅ | `scripts/build.py` (`--sdkconfig KEY=VALUE`) | Applied after derived options; used for keys and panel choice |
