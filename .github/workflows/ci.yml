@@ -1,0 +1,110 @@
+name: CI
+
+# Host-side checks that every pull request must pass. Firmware compilation lives
+# in `firmware-build.yml` (manual) and in the upstream `build.yml` matrix.
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches-ignore:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  host-checks:
+    name: Host checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: PR target guard
+        if: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        env:
+          BASE_REPOSITORY: ${{ github.event.pull_request.base.repo.full_name }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if [[ "$BASE_REPOSITORY" != "$REPOSITORY" ]]; then
+            echo "::error::This pull request targets $BASE_REPOSITORY. Lila pull requests must target $REPOSITORY:main."
+            exit 1
+          fi
+          if [[ "$BASE_REF" != "main" ]]; then
+            echo "::error::This pull request targets the '$BASE_REF' branch. Lila pull requests must target main."
+            exit 1
+          fi
+
+      - name: Compile tooling
+        run: python -m compileall -q scripts
+
+      - name: Skills mirror is in sync
+        run: python scripts/sync_skills.py --check
+
+      - name: Workflow policy
+        run: python scripts/check_workflow.py
+
+      - name: Host test suite
+        run: python -m unittest discover -s scripts/tests -v
+
+      - name: Lila build command preview
+        run: python scripts/build_lila.py --dry-run
+
+  formatting:
+    name: clang-format (changed lines)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install the pinned clang-format
+        run: |
+          python -m venv "$RUNNER_TEMP/clangfmt"
+          "$RUNNER_TEMP/clangfmt/bin/pip" install --quiet "clang-format==23.1.5"
+          echo "$RUNNER_TEMP/clangfmt/bin" >> "$GITHUB_PATH"
+
+      - name: Check changed C/C++ lines
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            BASE="$PR_BASE"
+            HEAD="$PR_HEAD"
+          elif [[ -n "${PUSH_BEFORE:-}" && "$PUSH_BEFORE" != "0000000000000000000000000000000000000000" ]]; then
+            BASE="$PUSH_BEFORE"
+            HEAD="${{ github.sha }}"
+          else
+            BASE="$(git rev-list --max-parents=0 HEAD | tail -n 1)"
+            HEAD="HEAD"
+          fi
+
+          python scripts/check_format.py --base "$BASE" --head "$HEAD"
