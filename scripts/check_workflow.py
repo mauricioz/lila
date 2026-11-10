@@ -112,6 +112,7 @@ WORKFLOW_MARKERS = {
         "scripts/check_format.py",
         "scripts/sync_skills.py --check",
         "unittest discover",
+        "git merge-base origin/main HEAD",
     ],
     ".github/workflows/firmware-build.yml": [
         "workflow_dispatch",

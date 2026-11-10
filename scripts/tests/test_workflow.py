@@ -147,6 +147,27 @@ class PullRequestTargetTests(unittest.TestCase):
         self.assertEqual(len(problems), len(check_workflow.PR_TARGET_DOCS))
 
 
+class FormatBaseResolutionTests(unittest.TestCase):
+    """A branch push must diff against the fork point, not the root commit.
+
+    The first push of a new branch reports `before = 000…`, so the CI used to
+    fall back to the root commit and check the whole upstream tree.
+    """
+
+    def setUp(self):
+        self.workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(
+            encoding="utf-8"
+        )
+
+    def test_push_runs_diff_against_the_fork_point(self):
+        self.assertIn("git merge-base origin/main HEAD", self.workflow)
+
+    def test_root_commit_is_only_a_last_resort(self):
+        merge_base = self.workflow.index("git merge-base origin/main HEAD")
+        root_commit = self.workflow.index("git rev-list --max-parents=0 HEAD")
+        self.assertLess(merge_base, root_commit)
+
+
 class PinnedFormatterTests(unittest.TestCase):
     def test_ci_and_standard_pin_the_same_version(self):
         self.assertEqual(check_workflow.check_pinned_formatter(ROOT), [])
