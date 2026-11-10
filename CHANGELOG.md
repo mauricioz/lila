@@ -58,6 +58,14 @@ The development workflow release: specs, standards, skills, and CI.
 - Telegram and Tavily HTTP failures log a provider label instead of the request
   URL, so a bot token embedded in the Telegram URL never reaches the log.
 
+### Fixed
+
+- The `clang-format (changed lines)` CI job now resolves the diff base of a
+  branch push to the fork point (`git merge-base origin/main HEAD`). The first
+  push of a new branch reports no previous revision, and the job used to fall
+  back to the root commit, which checked the whole upstream tree and failed on
+  pre-existing upstream formatting.
+
 ### Security
 
 - Documented the rule that URLs or bodies embedding a secret are never logged,

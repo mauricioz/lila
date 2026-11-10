@@ -1,6 +1,6 @@
 # FEAT_002 — Tasks
 
-Status: in progress · Owner: @mauricioz · Branch: `devs/mauri/chore/lila-workflow`
+Status: done · Owner: @mauricioz · Branch: `devs/mauri/chore/lila-workflow`
 
 ## 1. Spec and standards
 
@@ -50,4 +50,5 @@ Status: in progress · Owner: @mauricioz · Branch: `devs/mauri/chore/lila-workf
 - [x] `architecture-compliance-check` passed (tooling only)
 - [x] `code-review-checklist` passed
 - [x] Security scan passed (no token is read from or written to disk)
-- [ ] PR opened from the feature branch, targeting `mauricioz/lila:main`
+- [x] PR opened from the feature branch, targeting `mauricioz/lila:main` (PR #1, merged
+      as `dca5e89`)

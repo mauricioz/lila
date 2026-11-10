@@ -99,11 +99,19 @@ jobs:
           if [[ "$EVENT_NAME" == "pull_request" ]]; then
             BASE="$PR_BASE"
             HEAD="$PR_HEAD"
-          elif [[ -n "${PUSH_BEFORE:-}" && "$PUSH_BEFORE" != "0000000000000000000000000000000000000000" ]]; then
-            BASE="$PUSH_BEFORE"
-            HEAD="${{ github.sha }}"
           else
-            BASE="$(git rev-list --max-parents=0 HEAD | tail -n 1)"
+            # A branch push is compared against the point where the branch
+            # forked from the default branch. `github.event.before` is all
+            # zeroes for the first push of a new branch, and the root commit
+            # would drag the whole upstream tree into the check.
+            BASE="$(git merge-base origin/main HEAD || true)"
+            if [[ -z "$BASE" ]]; then
+              if [[ -n "${PUSH_BEFORE:-}" && "$PUSH_BEFORE" != "0000000000000000000000000000000000000000" ]]; then
+                BASE="$PUSH_BEFORE"
+              else
+                BASE="$(git rev-list --max-parents=0 HEAD | tail -n 1)"
+              fi
+            fi
             HEAD="HEAD"
           fi
 

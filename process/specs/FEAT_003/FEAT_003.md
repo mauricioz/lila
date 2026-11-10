@@ -5,7 +5,7 @@
 | ID | FEAT_003 |
 | Title | Replace the copied upstream README with a Lila front page and an upstream link |
 | Owner | @mauricioz |
-| Status | in progress |
+| Status | done |
 | Priority | medium |
 | Branch | `devs/mauri/chore/lila-workflow` |
 | OpenSpec change | — (documentation only) |

@@ -5,7 +5,7 @@
 | ID | FEAT_002 |
 | Title | Make it impossible to open a Lila pull request against the upstream project |
 | Owner | @mauricioz |
-| Status | in progress |
+| Status | done |
 | Priority | high |
 | Branch | `devs/mauri/chore/lila-workflow` |
 | OpenSpec change | — (process/tooling only, no firmware contract) |
