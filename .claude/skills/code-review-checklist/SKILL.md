@@ -76,6 +76,8 @@ line is verifiable in the diff or from a command; "looks fine" is not an answer.
 
 ## 8. Git hygiene
 
+- [ ] The pull request targets `mauricioz/lila:main`, not the upstream project
+      `78/xiaozhi-esp32` and not another branch.
 - [ ] Branch starts from an up-to-date `main`; never pushed to `main`.
 - [ ] Commits are Conventional Commits and the PR title matches the squash
   subject.

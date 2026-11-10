@@ -118,6 +118,35 @@ class RepositoryPolicyTests(unittest.TestCase):
         self.assertIn("WORKFLOW.md", problems[0])
 
 
+class ReadmePolicyTests(unittest.TestCase):
+    def test_readme_links_upstream_without_copying_it(self):
+        self.assertEqual(check_workflow.check_readme(ROOT), [])
+
+    def test_copied_upstream_body_is_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "README.md").write_text(
+                "# Lila\n\n## An MCP-based Chatbot\n", encoding="utf-8"
+            )
+            problems = check_workflow.check_readme(root)
+        self.assertTrue(any("An MCP-based Chatbot" in problem for problem in problems))
+
+
+class PullRequestTargetTests(unittest.TestCase):
+    def test_target_rule_is_documented_in_every_layer(self):
+        self.assertEqual(check_workflow.check_pr_target_rule(ROOT), [])
+
+    def test_missing_rule_is_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name in check_workflow.PR_TARGET_DOCS:
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("nothing about the target\n", encoding="utf-8")
+            problems = check_workflow.check_pr_target_rule(root)
+        self.assertEqual(len(problems), len(check_workflow.PR_TARGET_DOCS))
+
+
 class PinnedFormatterTests(unittest.TestCase):
     def test_ci_and_standard_pin_the_same_version(self):
         self.assertEqual(check_workflow.check_pinned_formatter(ROOT), [])

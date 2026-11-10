@@ -4,6 +4,10 @@
 
 - **CI-1** `main` is protected. Every change arrives through a pull request from
   `devs/<user>/<type>/<slug>`; admins are not exempt.
+- **CI-1a** Pull requests target `mauricioz/lila:main`, never
+  `78/xiaozhi-esp32:main` and never another branch. Use `python scripts/pr.py
+  check` before pushing and `python scripts/pr.py open` to create the pull
+  request; the `PR target guard` CI step enforces the base branch.
 - **CI-2** One logical change per PR. Refactors do not ride along with features.
 - **CI-3** Squash merge only; the PR title becomes the commit subject and must
   follow Conventional Commits.

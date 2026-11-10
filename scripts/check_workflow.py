@@ -49,6 +49,7 @@ REQUIRED_FILES = [
     ".opencode/skills/code-review-checklist/SKILL.md",
     "scripts/check_workflow.py",
     "scripts/check_format.py",
+    "scripts/pr.py",
     "scripts/sync_skills.py",
 ]
 
@@ -87,6 +88,13 @@ README_MARKERS = [
     "Development workflow",
     "process/WORKFLOW.md",
     "process/ROADMAP.md",
+    "https://github.com/78/xiaozhi-esp32",
+]
+
+README_FORBIDDEN = [
+    "An MCP-based Chatbot",
+    "README_zh.md",
+    "README_ja.md",
 ]
 
 AGENTS_MARKERS = [
@@ -98,6 +106,8 @@ AGENTS_MARKERS = [
 WORKFLOW_MARKERS = {
     ".github/workflows/ci.yml": [
         "pull_request",
+        "PR target guard",
+        "base.repo.full_name",
         "scripts/check_workflow.py",
         "scripts/check_format.py",
         "scripts/sync_skills.py --check",
@@ -316,6 +326,44 @@ def check_markers(root: Path) -> list[str]:
     return problems
 
 
+def check_readme(root: Path) -> list[str]:
+    """The front page documents Lila and links upstream instead of copying it."""
+    path = root / "README.md"
+    if not path.is_file():
+        return ["missing README.md"]
+    content = read_text(path)
+    return [
+        f"README.md must not contain {marker!r}: upstream documentation is "
+        "linked, not copied"
+        for marker in README_FORBIDDEN
+        if marker in content
+    ]
+
+
+PR_TARGET_DOCS = [
+    "process/WORKFLOW.md",
+    ".github/BRANCH_PROTECTION.md",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    "AGENTS.md",
+    "process/standards/ci-release.md",
+]
+
+
+def check_pr_target_rule(root: Path) -> list[str]:
+    """Every layer must name the repository a Lila pull request targets."""
+    problems: list[str] = []
+    for name in PR_TARGET_DOCS:
+        path = root / name
+        if not path.is_file():
+            problems.append(f"missing required file: {name}")
+            continue
+        if "mauricioz/lila" not in read_text(path):
+            problems.append(
+                f"{name} must state that pull requests target mauricioz/lila"
+            )
+    return problems
+
+
 def check_pinned_formatter(root: Path) -> list[str]:
     """The CI, the checker and the standard must pin the same clang-format."""
     script = root / "scripts" / "check_format.py"
@@ -346,7 +394,11 @@ def check_links(root: Path) -> list[str]:
     """Verify relative markdown links in the process documentation."""
     problems: list[str] = []
     documents = list((root / "process").rglob("*.md"))
-    for name in (".github/PULL_REQUEST_TEMPLATE.md", ".github/BRANCH_PROTECTION.md"):
+    for name in (
+        "README.md",
+        ".github/PULL_REQUEST_TEMPLATE.md",
+        ".github/BRANCH_PROTECTION.md",
+    ):
         path = root / name
         if path.is_file():
             documents.append(path)
@@ -390,6 +442,8 @@ def run_checks(root: Path) -> list[str]:
     problems.extend(check_env_example(root))
     problems.extend(check_env_not_tracked(root))
     problems.extend(check_markers(root))
+    problems.extend(check_readme(root))
+    problems.extend(check_pr_target_rule(root))
     problems.extend(check_pinned_formatter(root))
     problems.extend(check_links(root))
     problems.extend(check_skills(root))

@@ -10,6 +10,13 @@ Workflow: [`process/WORKFLOW.md`](../process/WORKFLOW.md).
 
 ## Required configuration
 
+**Pull requests must target `mauricioz/lila:main`.** The original upstream
+project (`78/xiaozhi-esp32`) is not a valid target: a pull request opened there
+proposes the whole Lila divergence to a third-party maintainer. It happened once
+(`78/xiaozhi-esp32#2404`, closed and never merged). The repository is detached
+from the fork network, so GitHub no longer offers the upstream as a base, and
+`scripts/pr.py` plus the `PR target guard` CI step keep the target explicit.
+
 Set this once in **Settings → Rules → Rulesets → New branch ruleset** (or
 **Settings → Branches** on older GitHub plans).
 

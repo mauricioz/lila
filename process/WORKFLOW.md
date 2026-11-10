@@ -6,6 +6,25 @@ acting.
 
 ## Branching and PRs
 
+### Where a pull request goes
+
+**Every Lila pull request targets `mauricioz/lila:main`.** Never
+`78/xiaozhi-esp32:main`: that is the original upstream project, and a pull
+request opened there proposes the whole Lila divergence to a third-party
+maintainer. It happened once (`78/xiaozhi-esp32#2404`, closed and never merged)
+and the repository has since been detached from the fork network.
+
+The target is never a dropdown choice:
+
+```bash
+python scripts/pr.py check            # verify the local target before pushing
+python scripts/pr.py open --title "chore(process): ..."   # create the PR
+```
+
+`scripts/pr.py` reads the target from the `origin` remote and refuses the
+upstream explicitly. The `PR target guard` step in CI fails a pull request that
+targets another branch or another repository.
+
 | Rule | Detail |
 | --- | --- |
 | Never push to `main` | `main` only receives merges from pull requests, admins included |

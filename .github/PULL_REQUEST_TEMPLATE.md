@@ -1,3 +1,8 @@
+## Target
+
+- [ ] This pull request targets `mauricioz/lila:main` (not the upstream project
+      `78/xiaozhi-esp32`, and not another branch)
+
 ## Summary
 
 <!-- One paragraph: what changed and why. Link the spec. -->

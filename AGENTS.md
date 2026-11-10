@@ -11,6 +11,7 @@ Use the ESP-IDF `release/v6.1` branch when possible. The minimum supported SDK i
 Lila is a personal fork of upstream XiaoZhi. The process is versioned in this repository and applies to every change, including process and documentation edits.
 
 - **Never push to `main`.** Every change lands through a pull request from a `devs/<user>/<type>/<slug>` branch. The full pipeline is in `process/WORKFLOW.md`; the policy decision is `process/adr/0001-pr-only-workflow.md`.
+- **Pull requests target `mauricioz/lila:main`** — never the upstream project `78/xiaozhi-esp32`, never another branch. Use `python scripts/pr.py check` before pushing and `python scripts/pr.py open` to create the pull request.
 - Read `process/README.md` and the applicable standard in `process/standards/` before editing. Security rules (`process/standards/security.md`) apply to every change, especially the rule that a URL or body embedding a secret must never be logged.
 - A behaviour change needs a spec in `process/specs/FEAT_XXX/`. A change to a contract (protocol, Kconfig surface, build CLI, release process) also needs an OpenSpec change under `openspec/changes/`.
 - Workflow skills live in `.opencode/skills/` (source of truth) and `.claude/skills/` (generated mirror). After editing one, run `python scripts/sync_skills.py --write`.

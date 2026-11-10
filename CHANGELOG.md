@@ -29,6 +29,8 @@ The development workflow release: specs, standards, skills, and CI.
 - `scripts/check_format.py`: validates the C/C++ lines a branch changed with the
   pinned clang-format 23.1.5, so upstream style inside a patched file is not a
   failure.
+- `scripts/pr.py`: creates and verifies pull requests against the repository in
+  the `origin` remote and refuses `78/xiaozhi-esp32` as a target.
 - PR-only `main`: `.github/workflows/pr-guard.yml` detects direct pushes,
   `.github/BRANCH_PROTECTION.md` documents the preventive ruleset, and
   `.github/PULL_REQUEST_TEMPLATE.md` carries the review gates.
@@ -44,6 +46,15 @@ The development workflow release: specs, standards, skills, and CI.
 - `AGENTS.md` now states the repository workflow and links the process docs.
 - The root `README.md` documents the development workflow, the tooling and the
   checks every pull request runs.
+- The root `README.md` is now a Lila-only front page: the copied upstream README
+  body was removed, the upstream is credited and linked from a short "Upstream
+  project" section, and the upstream translations `README_zh.md` and
+  `README_ja.md` were deleted. The upstream keeps its own documentation and
+  translations.
+- Every pull request must target `mauricioz/lila:main`; the rule is stated in
+  the workflow, the standards, the branch protection guide, the PR template and
+  `AGENTS.md`, and the `PR target guard` CI step fails a pull request aimed at
+  another repository or branch.
 - Telegram and Tavily HTTP failures log a provider label instead of the request
   URL, so a bot token embedded in the Telegram URL never reaches the log.
 

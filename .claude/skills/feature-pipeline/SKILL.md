@@ -115,8 +115,11 @@ git commit -m "feat(FEAT_XXX): <description>"
 git push -u origin HEAD
 ```
 
-Open the PR against `main` using `.github/PULL_REQUEST_TEMPLATE.md`. Never merge
-with failing required checks and never push to `main`.
+Open the PR against `mauricioz/lila:main` — never the upstream project
+`78/xiaozhi-esp32` — using `python scripts/pr.py open --title "..."` or the
+`.github/PULL_REQUEST_TEMPLATE.md` form. Run `python scripts/pr.py check` first
+to confirm the target. Never merge with failing required checks and never push
+to `main`.
 
 ## Stop conditions
 
