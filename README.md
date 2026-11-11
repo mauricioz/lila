@@ -1,5 +1,7 @@
 # Lila
 
+**English** · [Español](README.es.md)
+
 **Lila** is a personal fork of the [XiaoZhi AI Chatbot](https://github.com/78/xiaozhi-esp32),
 the open-source ESP32 voice assistant created by [78](https://github.com/78) and the
 XiaoZhi community. My daughter **Sophie** chose the name, so this little assistant is
@@ -12,7 +14,7 @@ careful engineering. Thank you, 78, and thank you to everyone who contributed th
 Lila only adds a few personal touches on top, and it inherits the upstream MIT license.
 
 This README documents **Lila only**. The upstream documentation, the board matrix,
-the translations and the community support live in
+the upstream translations and the community support live in
 [78/xiaozhi-esp32](https://github.com/78/xiaozhi-esp32) — see
 [Upstream project](#upstream-project) at the end of this page.
 
@@ -61,6 +63,21 @@ python scripts/build_lila.py              # build
 
 Both tools can also be enabled for any board in `idf.py menuconfig`
 (`Xiaozhi Assistant` → `Tavily API key`, `Telegram bot token`, `Telegram chat ID`).
+
+## Build guide and 3D-print case
+
+A step-by-step guide takes a new machine from an empty folder to a working
+Lila: installing ESP-IDF on Windows, Linux or macOS, configuring `.env`,
+building, flashing, printing the case and assembling it.
+
+| Guide | English | Spanish |
+| --- | --- | --- |
+| Build, flash, print and assemble | [`docs/lila-build-guide.md`](docs/lila-build-guide.md) | [`docs/lila-build-guide.es.md`](docs/lila-build-guide.es.md) |
+| 3D-print files (`.stl`) | [`STL/README.md`](STL/README.md) | [`STL/README.es.md`](STL/README.es.md) |
+
+The `.stl` files live in [`STL/`](STL/). The case targets the `wk-esp32s3-dev`
+board with the ST7789 240x240 panel; the index names every file, the print
+settings and what is still pending.
 
 ## Development workflow
 
@@ -118,7 +135,8 @@ MIT license. Everything that is not a Lila addition lives upstream:
 
 | Looking for | Go to |
 | --- | --- |
-| Project overview, features and translations | [78/xiaozhi-esp32](https://github.com/78/xiaozhi-esp32) |
+| This page in Spanish | [`README.es.md`](README.es.md) |
+| Project overview, features and upstream translations | [78/xiaozhi-esp32](https://github.com/78/xiaozhi-esp32) |
 | Supported boards and release matrix | [upstream board list](https://github.com/78/xiaozhi-esp32#supports-138-board-directories-and-171-release-variants-partial-list) |
 | Firmware releases | [upstream releases](https://github.com/78/xiaozhi-esp32/releases) |
 | ESP-IDF setup and flashing guide | [upstream README](https://github.com/78/xiaozhi-esp32#development-environment) |

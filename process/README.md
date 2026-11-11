@@ -30,6 +30,8 @@ otherwise.
 | [`specs/`](specs/) | Feature specs (`FEAT_XXX`) and their task lists |
 | [`standards/`](standards/) | Firmware, Python, CI/release, docs and security rules |
 | [`adr/`](adr/) | Architecture decision records |
+| [`../docs/lila-build-guide.md`](../docs/lila-build-guide.md) | Step-by-step guide to build, flash, print and assemble Lila (Spanish: [`../docs/lila-build-guide.es.md`](../docs/lila-build-guide.es.md)) |
+| [`../STL/`](../STL/) | 3D-print files of the Lila case and their index (Spanish: [`../STL/README.es.md`](../STL/README.es.md)) |
 | `.opencode/skills/` | Workflow skills used by OpenCode |
 | `.claude/skills/` | Identical copies used by Claude Code |
 | `.github/workflows/` | CI, PR guard and manual firmware build |

@@ -147,6 +147,57 @@ class PullRequestTargetTests(unittest.TestCase):
         self.assertEqual(len(problems), len(check_workflow.PR_TARGET_DOCS))
 
 
+class TranslationTests(unittest.TestCase):
+    def test_every_translated_document_exists_and_cross_links(self):
+        self.assertEqual(check_workflow.check_translations(ROOT), [])
+
+    def test_missing_translation_is_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "README.md").write_text("# Lila\n", encoding="utf-8")
+            problems = check_workflow.check_translations(root)
+        self.assertTrue(any("README.es.md" in problem for problem in problems))
+
+    def test_broken_language_switcher_is_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "README.md").write_text("# Lila\n", encoding="utf-8")
+            (root / "README.es.md").write_text(
+                "# Lila\n\n[English](README.md)\n", encoding="utf-8"
+            )
+            problems = check_workflow.check_translations(root)
+        self.assertTrue(
+            any("README.md must link to README.es.md" in problem for problem in problems)
+        )
+
+    def test_section_mismatch_is_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "README.md").write_text(
+                "# Lila\n\n## One\n\n[Español](README.es.md)\n", encoding="utf-8"
+            )
+            (root / "README.es.md").write_text(
+                "# Lila\n\n[English](README.md)\n", encoding="utf-8"
+            )
+            problems = check_workflow.check_translations(root)
+        self.assertTrue(
+            any("same sections" in problem for problem in problems)
+        )
+
+
+class StlIndexTests(unittest.TestCase):
+    def test_stl_index_names_the_target_hardware(self):
+        self.assertEqual(check_workflow.check_stl_index(ROOT), [])
+
+    def test_missing_stl_index_is_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            problems = check_workflow.check_stl_index(Path(tmp))
+        self.assertEqual(problems, ["missing STL/README.md"])
+
+    def test_stl_files_are_skipped_by_the_secret_scan(self):
+        self.assertIn(".stl", check_workflow.SKIP_SUFFIXES)
+
+
 class FormatBaseResolutionTests(unittest.TestCase):
     """A branch push must diff against the fork point, not the root commit.
 

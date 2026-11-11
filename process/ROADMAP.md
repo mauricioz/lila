@@ -6,7 +6,7 @@ available; this file tracks what Lila adds on top and what is planned next.
 
 Status: ✅ shipped · 🚧 in progress · 📋 planned · 💡 idea
 
-## Shipped — v0.1.0 (current)
+## Shipped — v0.1.0
 
 The first Lila release adds a configurable build and two optional device tools,
 all opt-in so a stock configuration still behaves like upstream.
@@ -30,7 +30,7 @@ camera input on supported boards, device-side and cloud-side MCP, 39 interface
 languages, 138 board directories / 171 release variants. Supported chips:
 ESP32, C3, C5, C6, S3, P4.
 
-## 🚧 v0.2.0 — Development workflow
+## ✅ Shipped — v0.2.0 — Development workflow
 
 This release is about making changes safe and repeatable.
 
@@ -44,7 +44,20 @@ This release is about making changes safe and repeatable.
 | Manual firmware build in the ESP-IDF 6.1 container | ✅ | `.github/workflows/firmware-build.yml` |
 | CodeGraph and RTK onboarding | ✅ | `process/TOOLING.md` |
 
-## 📋 v0.3.0 — Quality and automation
+## 🚧 v0.3.0 — Spanish documentation and hardware guide
+
+The release that makes Lila usable by the people who live with it: the whole
+documentation set in Spanish, a place for the 3D-print files of the case and a
+step-by-step guide from an empty machine to a working device.
+
+| Item | Status | Where |
+| --- | --- | --- |
+| Spanish front page | ✅ | `README.es.md` (switcher in `README.md`) |
+| Build, flash, print and assemble guide | ✅ | `docs/lila-build-guide.md`, `docs/lila-build-guide.es.md` |
+| 3D-print folder and index | ✅ | `STL/README.md`, `STL/README.es.md` (geometry pending) |
+| Translation parity enforced by CI | ✅ | `scripts/check_workflow.py` (`check_translations`), `scripts/tests/test_workflow.py` |
+
+## 📋 v0.4.0 — Quality and automation
 
 | Item | Status | Notes |
 | --- | --- | --- |
@@ -54,7 +67,7 @@ This release is about making changes safe and repeatable.
 | Release automation | 📋 | Tag `vX.Y.Z`, build artifacts, publish `releases/<version>_<board>.zip` |
 | Hardware-in-the-loop smoke test | 📋 | Documented manual checklist per board revision |
 
-## 📋 v0.4.0 — Product features
+## 📋 v0.5.0 — Product features
 
 | Item | Status | Notes |
 | --- | --- | --- |
@@ -62,7 +75,6 @@ This release is about making changes safe and repeatable.
 | More MCP tools | 💡 | Calendar, weather, reminders, home automation |
 | Conversation memory controls | 💡 | Per-family voice profiles and privacy settings |
 | Additional boards and panels | 💡 | Each new board needs a spec, variant and README |
-| Spanish documentation set | 💡 | `README_es.md`, Spanish board guides |
 
 ## 💡 Backlog
 
