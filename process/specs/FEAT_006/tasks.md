@@ -1,6 +1,6 @@
 # FEAT_006 — Tasks
 
-Status: review · Owner: @mauricioz · Branch: `devs/mauri/feat/FEAT-006-variation-docs`
+Status: done · Owner: @mauricioz · Branch: `devs/mauri/feat/FEAT-006-variation-docs`
 skill_loaded: true (feature-pipeline, enrich-us, standards-injector)
 
 ## 1. Spec and standards
@@ -87,5 +87,4 @@ skill_loaded: true (feature-pipeline, enrich-us, standards-injector)
 - [x] Secret scan + forbidden-word scan PASS — `scan_secrets` clean, explicit
       grep of the diff for token shapes: zero, repo-wide grep for forbidden
       reference words: zero matches
-- [ ] PR opened targeting `mauricioz/lila:main` via `scripts/pr.py` (last
-      step)
+- [x] PR opened targeting `mauricioz/lila:main` via `scripts/pr.py` — PR #5

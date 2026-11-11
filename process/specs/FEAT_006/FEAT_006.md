@@ -5,7 +5,7 @@
 | ID | FEAT_006 |
 | Title | Add `docs/variants/`: a chooser matrix and template-shaped pages for the circular display and speaker variations |
 | Owner | @mauricioz |
-| Status | review |
+| Status | done |
 | Priority | medium |
 | Branch | `devs/mauri/feat/FEAT-006-variation-docs` |
 | OpenSpec change | — (documentation plus a host-side workflow check; no firmware, Kconfig or build-CLI contract) |
@@ -47,47 +47,47 @@ enforced mechanically.
 
 ## Acceptance criteria
 
-- [ ] `docs/variants/README.md` and `docs/variants/README.es.md`: a chooser
+- [x] `docs/variants/README.md` and `docs/variants/README.es.md`: a chooser
       with a comparison matrix (variation, type, display, what changes, STL
       set, status), a legend for the three types (`config` / `parts` /
       `variant`), a link back to the default guide, and a language switcher.
-- [ ] The chooser lists **only variations that exist in the repository
+- [x] The chooser lists **only variations that exist in the repository
       today**: circular display and speaker. No battery row until the battery
       FEAT starts (decision recorded in the spec).
-- [ ] `docs/variants/circular-display.md` and `.es.md`: full page — what
+- [x] `docs/variants/circular-display.md` and `.es.md`: full page — what
       differs (same pins and wiring table, round panel, SPI mode 0, mirror
       X), BOM delta, the exact `LILA_DISPLAY=LCD_GC9A01_240X240` configure
       step verified with `build_lila.py --dry-run`, print/assemble delta, and
       an honest status (code present, hardware not verified).
-- [ ] `docs/variants/speaker.md` and `.es.md`: full page — a purchasing
+- [x] `docs/variants/speaker.md` and `.es.md`: full page — a purchasing
       choice with no configuration change (no speaker key exists), the I2S
       speaker pins from `config.h`, BOM delta, default STL set unless the
       driver does not fit, status.
-- [ ] Every variation page follows one fixed template — `## What's
+- [x] Every variation page follows one fixed template — `## What's
       different`, `## BOM delta`, `## Configure`, `## Print and assemble`,
       `## Status and verification` (Spanish siblings carry the translated
       headings in the same order) — and declares its type in a
       `**Type:**` / `**Tipo:**` line; a `variant` page must name the
       `FEAT_XXX` that implements it.
-- [ ] `scripts/check_workflow.py` gains `check_variants()`, registered in
+- [x] `scripts/check_workflow.py` gains `check_variants()`, registered in
       `run_checks()`, enforcing: the chooser exists, every page has its
       `.es.md` sibling registered in `TRANSLATION_PAIRS`, template headings
       match in order, the matrix links every page and every matrix link
       resolves, and each page links back to the chooser.
-- [ ] New tests in `scripts/tests/test_workflow.py` cover the pass case and
+- [x] New tests in `scripts/tests/test_workflow.py` cover the pass case and
       the failure modes (missing sibling, wrong template, unlisted page,
       dead matrix link, unregistered pair, missing type, `variant` type
       without a FEAT reference).
-- [ ] The default guide (`docs/lila-build-guide.md` + `.es.md`) gains a
+- [x] The default guide (`docs/lila-build-guide.md` + `.es.md`) gains a
       "choose a variation" pointer near the top; `README.md` / `README.es.md`
       link the chooser.
-- [ ] Standards updated: DOC-16 names the new translation pairs, DOC-17
+- [x] Standards updated: DOC-16 names the new translation pairs, DOC-17
       grows the optional variation dimension in the STL naming
       (`lila-<part>-<board>[-<variation>].stl`), new DOC-18 documents the
       variation template and chooser reciprocity.
-- [ ] `process/ROADMAP.md` and `CHANGELOG.md` updated; both language READMEs
+- [x] `process/ROADMAP.md` and `CHANGELOG.md` updated; both language READMEs
       stay in sync.
-- [ ] No images or binary assets; no firmware, Kconfig, `build_lila.py` or
+- [x] No images or binary assets; no firmware, Kconfig, `build_lila.py` or
       build-CLI change; no secret-shaped string anywhere (SEC-1, SEC-2).
 
 ## Technical blueprint
