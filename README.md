@@ -67,8 +67,9 @@ Both tools can also be enabled for any board in `idf.py menuconfig`
 ## Build guide and 3D-print case
 
 A step-by-step guide takes a new machine from an empty folder to a working
-Lila: installing ESP-IDF on Windows, Linux or macOS, configuring `.env`,
-building, flashing, printing the case and assembling it.
+Lila: the shopping list, installing ESP-IDF on Windows, Linux or macOS,
+configuring `.env` with copy-paste recipes, building, flashing, printing the
+case, and wiring and assembling it with a checkpoint after every step.
 
 | Guide | English | Spanish |
 | --- | --- | --- |

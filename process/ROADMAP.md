@@ -53,7 +53,7 @@ step-by-step guide from an empty machine to a working device.
 | Item | Status | Where |
 | --- | --- | --- |
 | Spanish front page | ✅ | `README.es.md` (switcher in `README.md`) |
-| Build, flash, print and assemble guide | ✅ | `docs/lila-build-guide.md`, `docs/lila-build-guide.es.md` |
+| Build, flash, print and assemble guide (shopping list, configuration recipes, wiring tables, checkpointed assembly) | ✅ | `docs/lila-build-guide.md`, `docs/lila-build-guide.es.md` |
 | 3D-print folder and index | ✅ | `STL/README.md`, `STL/README.es.md` (geometry pending) |
 | Translation parity enforced by CI | ✅ | `scripts/check_workflow.py` (`check_translations`), `scripts/tests/test_workflow.py` |
 
