@@ -22,6 +22,9 @@ step-by-step guide from an empty machine to a working device.
 - `docs/lila-build-guide.md` and `docs/lila-build-guide.es.md`: the guide from
   installing ESP-IDF on Windows, Linux or macOS to configuring `.env`, building,
   flashing, printing the case and assembling it.
+- The build guide gained a shopping list (BOM), copy-paste `.env`
+  configuration recipes, per-connector wiring tables and assembly steps that
+  each end with a verification checkpoint.
 - `STL/`: the home of the `.stl` files of the Lila case, with a bilingual index
   (`STL/README.md`, `STL/README.es.md`) that names the target hardware, the
   naming convention, the print settings and the files still to come.

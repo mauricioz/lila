@@ -3,10 +3,10 @@
 [English](lila-build-guide.md) · **Español**
 
 Esta guía lleva a una máquina nueva desde una carpeta vacía hasta una Lila
-funcionando: instalar el toolchain, configurar la compilación, compilar el
-firmware, flashearlo, imprimir la carcasa y montarla. Está escrita para la
-placa `wk-esp32s3-dev` con la pantalla ST7789 de 240x240, que es el perfil de
-Lila.
+funcionando: la lista de compra, el toolchain, una compilación configurada,
+el firmware en la placa, la carcasa impresa y el asistente cableado y
+montado. Está escrita para la placa `wk-esp32s3-dev` con la pantalla ST7789
+de 240x240, que es el perfil de Lila.
 
 La guía se escribió sobre el repositorio, no sobre un dispositivo: los comandos
 son los de los scripts de este repositorio, pero la impresión y el flasheo no
@@ -15,24 +15,47 @@ necesita una placa real.
 
 | Paso | Resultado |
 | --- | --- |
+| [Lista de compra](#lista-de-compra) | cada parte que comprar, con especificación y cantidad |
 | [Instalar ESP-IDF](#instalar-esp-idf) | el toolchain que compila el firmware |
 | [Configurar la compilación](#obtener-el-código-y-configurar-env) | un `.env` que describe tu Lila |
+| [Recetas de configuración](#recetas-de-configuración) | bloques `.env` listos para copiar |
 | [Compilar](#compilar-el-firmware) | `build/merged-binary.bin` |
 | [Flashear](#flashear-el-dispositivo) | Lila funcionando en la placa |
+| [Primer arranque](#primer-arranque) | lo que debe mostrar el log |
 | [Imprimir](#imprimir-la-carcasa) | las piezas de la carcasa |
-| [Montar](#montar-y-cablear) | un asistente terminado sobre la mesa |
+| [Montar](#montar-y-cablear) | las tablas de cableado y los pasos con comprobación |
+| [Comprobar](#comprobar-que-lila-funciona) | prueba de que cada subsistema funciona |
+| [Problemas frecuentes](#problemas-frecuentes) | soluciones a los fallos habituales |
+| [Y ahora qué](#y-ahora-qué) | el resto de la documentación |
 
-## Qué necesitas
+## Lista de compra
+
+Todo lo que Lila necesita. Los vendedores y los precios varían según la
+región; lo que importa es la especificación. La placa es la única parte para
+la que está escrito el firmware.
+
+### Hardware
+
+| Parte | Especificación | Cant. | Dónde va |
+| --- | --- | --- | --- |
+| Placa de desarrollo | `wk-esp32s3-dev` (ESP32-S3N16R8: 16 MB de flash, 8 MB de PSRAM) | 1 | el cerebro; el README de la placa enlaza la tienda |
+| Pantalla | ST7789 240x240, módulo SPI de 7 pines: GND, VCC, SCL, SDA, RES, DC, BLK (sin hilo CS) | 1 | frente de la carcasa |
+| Altavoz | 4 Ω, altavoz pequeño para carcasa | 1 | dentro de la carcasa, en la salida de altavoz de la placa |
+| Cable USB-C | cable de **datos**, no de solo carga | 1 | alimentación y flasheo |
+| Filamento | PLA o PETG | 1 rollo — una carcasa usa una fracción mínima | la carcasa ([ajustes de impresión](../STL/README.es.md)) |
+| Archivos de la carcasa | las piezas `.stl` de [`STL/`](../STL/) | 1 juego | los imprimes tú o un servicio de impresión |
+
+Un módulo con línea CS también funciona: cambia una línea de configuración
+([la receta](#pantalla-con-línea-cs)), no la lista de partes.
+
+### Herramientas
 
 | Elemento | Detalle |
 | --- | --- |
-| Placa | `wk-esp32s3-dev` (ESP32-S3N16R8) |
-| Pantalla | ST7789 240x240, módulo de 7 pines (GND, VCC, SCL, SDA, RES, DC, BLK) |
-| Altavoz | 4 Ω, conectado a la salida I2S del amplificador de la placa |
-| Cable | USB-C, para alimentación y para flashear |
 | Ordenador | Windows, Linux o macOS con unos 20 GB de disco libre |
-| Toolchain | ESP-IDF `release/v6.1` (mínimo soportado: v6.0.1) |
-| Impresora | FDM con boquilla de 0,4 mm, para la carcasa (opcional) |
+| Toolchain | ESP-IDF `release/v6.1` (mínimo soportado: v6.0.1) — se instala en el siguiente paso |
+| Impresora | FDM con boquilla de 0,4 mm, 200x200x200 mm o mayor — opcional, cualquier servicio de impresión puede imprimir los archivos `.stl` |
+| Herramientas de mano | pelacables o un soldador, según cómo termine sus pines el módulo de la pantalla |
 
 La documentación del upstream describe las placas y el montaje general en
 [78/xiaozhi-esp32](https://github.com/78/xiaozhi-esp32); esta guía solo
@@ -117,6 +140,73 @@ La palabra de activación `custom:lila` es un comando MultiNet personalizado.
 Solo funciona en los targets ESP32-S3, S31 y P4, y hace que la compilación
 incluya en la partición de assets el modelo MultiNet 7 cuantizado en inglés.
 
+## Recetas de configuración
+
+La tabla de arriba explica cada clave por separado. Estos son contenidos
+completos de `.env` para los ajustes que aparecen más a menudo: elige el más
+parecido, cópialo sobre tu `.env`, ajústalo y recompila — todo cambio en
+`.env` necesita una compilación nueva antes de llegar al dispositivo.
+
+### Mínima — sin credenciales
+
+```bash
+# Lila de fábrica: interfaz en español, palabra de activación "lila", ST7789 de 7 pines, sin herramientas opcionales.
+LILA_BOARD=wk-esp32s3-dev
+LILA_NAME=wk-esp32s3-dev
+LILA_LANGUAGE=es-ES
+LILA_WAKE_WORD=custom:lila
+LILA_DISPLAY=LCD_ST7789_240X240_7PIN
+```
+
+### Familiar — Telegram y búsqueda web
+
+```bash
+# Todo lo de la Mínima, más las dos herramientas opcionales:
+LILA_TAVILY_API_KEY=               # clave de https://tavily.com
+LILA_TELEGRAM_BOT_TOKEN=           # token de @BotFather
+LILA_TELEGRAM_CHAT_ID=             # tu chat id
+```
+
+Déjame una clave vacía y la herramienta correspondiente simplemente no existe
+en la compilación — ese es el comportamiento deseado, no un error. Rellena los
+valores en tu propio `.env`; nunca los subas al repositorio.
+
+### Otra palabra de activación
+
+```bash
+# otro comando personalizado (MultiNet; solo ESP32-S3, S31 y P4):
+LILA_WAKE_WORD=custom:robot
+
+# o un modelo WakeNet, o desactiva la detección:
+# LILA_WAKE_WORD=hiesp
+# LILA_WAKE_WORD=disabled
+```
+
+### Pantalla con línea CS
+
+```bash
+LILA_DISPLAY=LCD_ST7789_240X240    # modo SPI 0 en lugar del modo 3
+```
+
+### Otro idioma de interfaz
+
+```bash
+LILA_LANGUAGE=en-US                 # el repositorio incluye 41 locales
+```
+
+La lista autoritativa no necesita ESP-IDF:
+
+```bash
+python scripts/build.py --list-languages
+```
+
+### Avanzado — overrides en bruto y empaquetado
+
+```bash
+LILA_SDKCONFIG=CONFIG_SOME_VALUE=1  # override en bruto, se aplica después de todas las opciones derivadas
+LILA_ZIP=1                          # además empaqueta releases/<version>_<name>.zip
+```
+
 ## Compilar el firmware
 
 Primero previsualiza el comando: imprime exactamente lo que se va a ejecutar,
@@ -176,8 +266,10 @@ idf.py -p COM5 erase-flash flash monitor
 
 ## Primer arranque
 
-El dispositivo se conecta al Wi-Fi configurado, muestra la cara en la pantalla
-y escucha la palabra de activación. Qué buscar en el log:
+Ejecuta esto justo después de flashear, con todas las piezas todavía sobre la
+mesa: es la primera comprobación de toda la obra. El dispositivo se conecta al
+Wi-Fi configurado, muestra la cara en la pantalla y escucha la palabra de
+activación. Qué buscar en el log:
 
 - el nombre de la placa y la conexión al Wi-Fi;
 - el modelo de palabra de activación en uso (`Lila`, con el prefijo `custom:`);
@@ -218,40 +310,84 @@ pedir un archivo nuevo.
 
 ## Montar y cablear
 
-Orden de montaje:
+La `wk-esp32s3-dev` lleva el micrófono, el amplificador, los botones y el LED
+en la propia placa. Tú cableas exactamente dos cosas — la pantalla y el
+altavoz — y cada valor de pin de abajo está leído de
+`main/boards/wk-esp32s3-dev/config.h`.
 
-1. fija la placa en el cuerpo de la carcasa;
-2. conecta la pantalla y el altavoz;
-3. coloca la pantalla en su marco;
-4. cierra la tapa y atornilla;
-5. conecta el USB-C y arranca el dispositivo.
+*Sin verificar*: las tablas vienen de la configuración de la placa; el
+cableado no se comprobó en una placa física con esta carcasa.
 
-El mapa de pines de la placa `wk-esp32s3-dev`, leído de
-`main/boards/wk-esp32s3-dev/config.h`:
+### Cableado de la pantalla
 
-| Función | Pin |
+El módulo ST7789 de 7 pines:
+
+| Pin del módulo | Pin de la placa | Señal |
+| --- | --- | --- |
+| BLK | GPIO10 | retroiluminación |
+| SDA (MOSI) | GPIO8 | datos SPI |
+| SCL (CLK) | GPIO9 | reloj SPI |
+| DC | GPIO12 | datos / comando |
+| RES | GPIO13 | reset |
+| VCC | 3.3 V | alimentación |
+| GND | GND | masa |
+
+El módulo no tiene hilo CS; el firmware igualmente maneja una línea CS en
+GPIO11, así que en este módulo ese pin queda sin conectar. Un módulo que saca
+un hilo CS lo conecta a GPIO11 y compila con `LILA_DISPLAY=LCD_ST7789_240X240`
+— el modo SPI (3 frente a 0) es la única diferencia entre los dos símbolos.
+
+### Cableado del altavoz
+
+Dos hilos desde el altavoz hasta la salida de altavoz de la placa: el
+amplificador está en la placa. El enlace I2S entre el chip y ese amplificador
+está fijo en la placa y no necesita cableado — se lista solo como referencia:
+
+| Referencia | Pin |
 | --- | --- |
-| Retroiluminación | GPIO10 |
-| MOSI de la pantalla (SDA) | GPIO8 |
-| CLK de la pantalla (SCL) | GPIO9 |
-| DC de la pantalla | GPIO12 |
-| Reset de la pantalla | GPIO13 |
-| WS del micrófono | GPIO40 |
-| SCK del micrófono | GPIO42 |
-| Datos del micrófono | GPIO41 |
 | Datos del altavoz (DOUT) | GPIO21 |
 | BCLK del altavoz | GPIO47 |
 | LRCK del altavoz | GPIO48 |
-| Botón de arranque | GPIO0 |
-| Volumen arriba / abajo | GPIO38 / GPIO39 |
-| LED de estado | GPIO14 |
 
-El módulo ST7789 de 7 pines no tiene línea CS, y por eso el valor por defecto
-`LILA_DISPLAY` es `LCD_ST7789_240X240_7PIN` (modo SPI 3). Si tu módulo tiene
-hilo CS, compila con `LILA_DISPLAY=LCD_ST7789_240X240` (modo SPI 0).
+### Ya está en la placa
 
-*Sin verificar*: la tabla anterior viene de la configuración de la placa, pero
-el cableado no se comprobó en una placa física con esta carcasa.
+| Función | Pin | Nota |
+| --- | --- | --- |
+| WS del micrófono | GPIO40 | micrófono integrado |
+| SCK del micrófono | GPIO42 | micrófono integrado |
+| Datos del micrófono | GPIO41 | micrófono integrado |
+| Botón de arranque | GPIO0 | también entra en el bootloader |
+| Volumen arriba / abajo | GPIO38 / GPIO39 | |
+| LED de estado | GPIO14 | |
+
+### Pasos de montaje
+
+Cada paso termina en una comprobación: no sigas hasta que pase. Depurar sobre
+la mesa es mucho más barato que depurar a través de una carcasa cerrada.
+
+1. **Flashea y prueba sobre la mesa primero** —
+   [Flashear el dispositivo](#flashear-el-dispositivo) con todas las piezas
+   sobre la mesa.
+   - Comprobación: el log de arranque llega al final sin reinicios, la
+     retroiluminación se enciende y aparece la cara en la pantalla.
+2. **Fija la placa en el cuerpo de la carcasa.**
+   - Comprobación: el puerto USB-C queda alineado con la abertura y el cable
+     entra sin fuerza.
+3. **Conecta la pantalla** con la tabla de arriba.
+   - Comprobación: reinicia la placa; la retroiluminación se enciende en
+     cuanto arranca.
+4. **Conecta el altavoz** a la salida de altavoz de la placa.
+   - Comprobación: pídele cualquier cosa a Lila; se oye la respuesta a
+     volumen normal, sin crepitar.
+5. **Coloca la pantalla en su marco** y enruta los hilos sin apretar ninguno.
+   - Comprobación: la cara queda centrada en la abertura y ningún hilo queda
+     atrapado entre el marco y el cuerpo.
+6. **Cierra la tapa.**
+   - Comprobación: la junta queda pareja por todos lados, el marco no se movió
+     y nada suelta ruido.
+7. **Ejecuta la comprobación completa** —
+   [Comprobar que Lila funciona](#comprobar-que-lila-funciona) de principio a
+   fin sobre el asistente terminado.
 
 ## Comprobar que Lila funciona
 
@@ -275,8 +411,9 @@ nuevo.
 | `idf.py: command not found` | el entorno no está cargado | ejecuta `. ~/esp-idf/export.sh` (o el script de PowerShell) en esa terminal |
 | `A custom wake word requires ESP32-S3/S31/P4` | la palabra `custom:<palabra>` en otro chip | usa un modelo WakeNet o `disabled` en los demás targets |
 | La pantalla se queda negra | símbolo de panel equivocado o modo SPI equivocado | revisa `LILA_DISPLAY` según tu módulo: 7 pines es `LCD_ST7789_240X240_7PIN` |
+| La pantalla se enciende pero no muestra nada | la pantalla está cableada a pines equivocados | revisa BLK, SDA, SCL, DC y RES según la tabla de la pantalla de arriba |
 | La pantalla muestra caracteres raros | modo SPI o cableado que no cuadran | los módulos de 7 pines usan el modo 3; los que tienen CS, el modo 0 |
-| No hay sonido | altavoz sin conectar, o pines I2S equivocados | revisa los pines del altavoz en la tabla de arriba y el amplificador |
+| No hay sonido | altavoz sin conectar, o salida equivocada | revisa el cableado del altavoz de arriba y que los dos hilos lleguen a la salida de altavoz de la placa |
 | El puerto desaparece al flashear | la placa reinicia en el bootloader | pulsa **BOOT**, toca **RESET**, suelta **BOOT** y flashea otra vez |
 | La primera compilación tarda muchísimo | se están descargando las dependencias | deja que termine; las siguientes usan la caché |
 | `web.search` no existe | no había clave de Tavily al compilar | pon `LILA_TAVILY_API_KEY` en `.env` y recompila |

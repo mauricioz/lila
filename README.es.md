@@ -76,8 +76,9 @@ token`, `Telegram chat ID`).
 ## Guía de construcción y carcasa impresa en 3D
 
 Una guía paso a paso lleva a una máquina nueva desde una carpeta vacía hasta
-una Lila funcionando: instalar ESP-IDF en Windows, Linux o macOS, configurar
-`.env`, compilar, flashear, imprimir la carcasa y montarla.
+una Lila funcionando: la lista de compra, instalar ESP-IDF en Windows, Linux
+o macOS, configurar `.env` con recetas listas para copiar, compilar, flashear,
+imprimir la carcasa, y cablear y montarla con una comprobación tras cada paso.
 
 | Guía | Inglés | Español |
 | --- | --- | --- |

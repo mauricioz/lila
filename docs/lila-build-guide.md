@@ -2,36 +2,58 @@
 
 **English** · [Español](lila-build-guide.es.md)
 
-This guide takes a new machine from an empty folder to a working Lila: install
-the toolchain, configure the build, compile the firmware, flash it, print the
-case and assemble it. It targets the `wk-esp32s3-dev` board with the ST7789
-240x240 screen — the Lila profile.
+This guide takes a new machine from an empty folder to a working Lila: the
+shopping list, the toolchain, a configured build, the firmware on the board,
+the printed case and the wired, assembled assistant. It targets the
+`wk-esp32s3-dev` board with the ST7789 240x240 screen — the Lila profile.
 
-The guide was written against the repository, not against a device: the commands
-come from the scripts in this repository, but the printing and the flashing were
-not executed by the author of these lines. Anything marked *not verified* needs
-a real board.
+The guide was written against the repository, not against a device: the
+commands come from the scripts in this repository, but the printing and the
+flashing were not executed by the author of these lines. Anything marked
+*not verified* needs a real board.
 
 | Step | What you get |
 | --- | --- |
+| [Shopping list](#shopping-list) | every part to buy, with specification and quantity |
 | [Install ESP-IDF](#install-esp-idf) | the toolchain that compiles the firmware |
 | [Configure the build](#get-the-source-and-configure-env) | a `.env` that describes your Lila |
+| [Configuration recipes](#configuration-recipes) | copy-paste `.env` blocks for common setups |
 | [Build](#build-the-firmware) | `build/merged-binary.bin` |
 | [Flash](#flash-the-device) | Lila running on the board |
+| [First boot](#first-boot) | what the log must show |
 | [Print](#print-the-case) | the parts of the case |
-| [Assemble](#assemble-and-wire) | a finished assistant on the desk |
+| [Assemble](#assemble-and-wire) | the wiring tables and the checkpointed assembly steps |
+| [Check](#check-that-lila-works) | proof that every subsystem works |
+| [Troubleshooting](#troubleshooting) | fixes for the common failures |
+| [Where to go next](#where-to-go-next) | the rest of the documentation |
 
-## What you need
+## Shopping list
+
+Everything Lila needs. Sellers and prices vary by region; the specifications
+are what matter. The board is the only part the firmware is written for.
+
+### Hardware
+
+| Part | Specification | Qty | Where it goes |
+| --- | --- | --- | --- |
+| Development board | `wk-esp32s3-dev` (ESP32-S3N16R8: 16 MB flash, 8 MB PSRAM) | 1 | the brain; the board README links the store page |
+| Display | ST7789 240x240, 7-pin SPI module: GND, VCC, SCL, SDA, RES, DC, BLK (no CS wire) | 1 | front of the case |
+| Speaker | 4 Ω, small enclosure speaker | 1 | inside the case, on the board's speaker output |
+| USB-C cable | **data** cable, not charge-only | 1 | power and flashing |
+| Filament | PLA or PETG | 1 spool — a case uses a small fraction of it | the case ([print settings](../STL/README.md)) |
+| Case files | the `.stl` parts from [`STL/`](../STL/) | 1 set | printed by you or by a print service |
+
+A module with a CS wire also works: it changes one line of configuration
+([the recipe](#display-module-with-a-cs-wire)), not the part list.
+
+### Tools
 
 | Item | Detail |
 | --- | --- |
-| Board | `wk-esp32s3-dev` (ESP32-S3N16R8) |
-| Display | ST7789 240x240, 7-pin module (GND, VCC, SCL, SDA, RES, DC, BLK) |
-| Speaker | 4 Ω, connected to the board's I2S amplifier output |
-| Cable | USB-C, for power and for flashing |
 | Computer | Windows, Linux or macOS with about 20 GB of free disk |
-| Toolchain | ESP-IDF `release/v6.1` (minimum supported: v6.0.1) |
-| Printer | FDM, 0.4 mm nozzle, for the case (optional) |
+| Toolchain | ESP-IDF `release/v6.1` (minimum supported: v6.0.1) — installed in the next step |
+| Printer | FDM with a 0.4 mm nozzle, 200x200x200 mm or bigger — optional, any print service can print the `.stl` files |
+| Hand tools | wire strippers or a soldering iron, depending on how your display module terminates its pins |
 
 The upstream documentation describes the boards and the general setup in
 [78/xiaozhi-esp32](https://github.com/78/xiaozhi-esp32); this guide only covers
@@ -114,6 +136,73 @@ The wake word `custom:lila` is a MultiNet custom command. It only works on
 ESP32-S3, S31 and P4 targets, and it makes the build include the English
 MultiNet 7 quantized model in the assets partition.
 
+## Configuration recipes
+
+The table above explains every key on its own. These are complete `.env`
+contents for the setups that come up most often: pick the closest one, copy
+it over your `.env`, adjust, and rebuild — every change to `.env` needs a new
+build before it reaches the device.
+
+### Minimal — no credentials
+
+```bash
+# Stock Lila: Spanish interface, wake word "lila", 7-pin ST7789, no optional tools.
+LILA_BOARD=wk-esp32s3-dev
+LILA_NAME=wk-esp32s3-dev
+LILA_LANGUAGE=es-ES
+LILA_WAKE_WORD=custom:lila
+LILA_DISPLAY=LCD_ST7789_240X240_7PIN
+```
+
+### Family — Telegram and web search
+
+```bash
+# Everything from Minimal, plus the two optional tools:
+LILA_TAVILY_API_KEY=               # key from https://tavily.com
+LILA_TELEGRAM_BOT_TOKEN=           # token from @BotFather
+LILA_TELEGRAM_CHAT_ID=             # your chat id
+```
+
+Leave a key empty and the matching tool simply does not exist in the build —
+that is the designed behaviour, not an error. Fill the values in your own
+`.env`; never commit them.
+
+### Another wake word
+
+```bash
+# a different custom command (MultiNet; ESP32-S3, S31 and P4 only):
+LILA_WAKE_WORD=custom:robot
+
+# or a WakeNet model, or turn detection off:
+# LILA_WAKE_WORD=hiesp
+# LILA_WAKE_WORD=disabled
+```
+
+### Display module with a CS wire
+
+```bash
+LILA_DISPLAY=LCD_ST7789_240X240    # SPI mode 0 instead of mode 3
+```
+
+### Another interface language
+
+```bash
+LILA_LANGUAGE=en-US                 # 41 locales ship in the repository
+```
+
+The authoritative list needs no ESP-IDF:
+
+```bash
+python scripts/build.py --list-languages
+```
+
+### Advanced — raw overrides and packaging
+
+```bash
+LILA_SDKCONFIG=CONFIG_SOME_VALUE=1  # raw override, applied after every derived option
+LILA_ZIP=1                          # also package releases/<version>_<name>.zip
+```
+
 ## Build the firmware
 
 Preview the command first — it prints exactly what will run, without touching
@@ -172,8 +261,10 @@ idf.py -p COM5 erase-flash flash monitor
 
 ## First boot
 
-The device connects to the configured Wi-Fi, shows the face on the screen and
-listens for the wake word. What to look for in the log:
+Run this right after flashing, with every part still on the desk — it is the
+first checkpoint of the whole build. The device connects to the configured
+Wi-Fi, shows the face on the screen and listens for the wake word. What to
+look for in the log:
 
 - the board name and the Wi-Fi connection;
 - the wake word model in use (`Lila`, with the `custom:` prefix);
@@ -212,40 +303,83 @@ print as a prototype and adjust the slicer before asking for a new file.
 
 ## Assemble and wire
 
-Assembly order:
+The `wk-esp32s3-dev` carries the microphone, the amplifier, the buttons and
+the LED on the board. You wire exactly two things — the display and the
+speaker — and every pin value below is read from
+`main/boards/wk-esp32s3-dev/config.h`.
 
-1. mount the board in the enclosure body;
-2. connect the display and the speaker;
-3. fit the screen into the panel;
-4. close the lid and screw it;
-5. plug USB-C and boot the device.
+*Not verified*: the tables come from the board configuration; the wiring was
+not checked on a physical board with this case.
 
-The pin map of the `wk-esp32s3-dev` board, read from
-`main/boards/wk-esp32s3-dev/config.h`:
+### Wiring the display
 
-| Function | Pin |
+The 7-pin ST7789 module:
+
+| Module pin | Board pin | Signal |
+| --- | --- | --- |
+| BLK | GPIO10 | backlight |
+| SDA (MOSI) | GPIO8 | SPI data |
+| SCL (CLK) | GPIO9 | SPI clock |
+| DC | GPIO12 | data / command |
+| RES | GPIO13 | reset |
+| VCC | 3.3 V | power |
+| GND | GND | ground |
+
+The module has no CS wire; the firmware still drives a CS line on GPIO11, so
+for this module that pin stays unconnected. A module that brings a CS wire
+out connects it to GPIO11 and builds with `LILA_DISPLAY=LCD_ST7789_240X240`
+— the SPI mode (3 vs 0) is the only difference between the two symbols.
+
+### Wiring the speaker
+
+Two wires from the speaker to the board's speaker output: the amplifier is on
+the board. The I2S link between the chip and that amplifier is fixed on the
+board and needs no wiring — it is listed for reference only:
+
+| Reference | Pin |
 | --- | --- |
-| Display backlight | GPIO10 |
-| Display MOSI (SDA) | GPIO8 |
-| Display CLK (SCL) | GPIO9 |
-| Display DC | GPIO12 |
-| Display reset | GPIO13 |
-| Microphone WS | GPIO40 |
-| Microphone SCK | GPIO42 |
-| Microphone data | GPIO41 |
 | Speaker data (DOUT) | GPIO21 |
 | Speaker BCLK | GPIO47 |
 | Speaker LRCK | GPIO48 |
-| Boot button | GPIO0 |
-| Volume up / down | GPIO38 / GPIO39 |
-| Status LED | GPIO14 |
 
-The 7-pin ST7789 module has no CS line, which is exactly why the default
-`LILA_DISPLAY` is `LCD_ST7789_240X240_7PIN` (SPI mode 3). If your module has a
-CS wire, build with `LILA_DISPLAY=LCD_ST7789_240X240` (SPI mode 0).
+### Already on the board
 
-*Not verified*: the table above comes from the board configuration, but the
-wiring was not checked on a physical board with this case.
+| Function | Pin | Note |
+| --- | --- | --- |
+| Microphone WS | GPIO40 | on-board microphone |
+| Microphone SCK | GPIO42 | on-board microphone |
+| Microphone data | GPIO41 | on-board microphone |
+| Boot button | GPIO0 | also enters the bootloader |
+| Volume up / down | GPIO38 / GPIO39 | |
+| Status LED | GPIO14 | |
+
+### Assembly steps
+
+Every step ends with a checkpoint: do not continue until it passes. Debugging
+on the desk is much cheaper than debugging through a closed case.
+
+1. **Flash and bench-test first** — [Flash the device](#flash-the-device)
+   with every part on the desk.
+   - Checkpoint: the boot log runs to the end without a reboot loop, the
+     backlight comes on and the face appears on the screen.
+2. **Mount the board in the enclosure body.**
+   - Checkpoint: the USB-C port lines up with the cutout and the cable goes
+     in without force.
+3. **Connect the display** using the table above.
+   - Checkpoint: power-cycle the board; the backlight turns on as soon as it
+     boots.
+4. **Connect the speaker** to the board's speaker output.
+   - Checkpoint: ask Lila anything; the answer is audible at normal volume,
+     with no crackle.
+5. **Fit the screen into the panel** and route the wires so nothing is
+   pinched.
+   - Checkpoint: the face is centered in the opening and no wire is trapped
+     between the panel and the body.
+6. **Close the lid.**
+   - Checkpoint: the seam is even all around, the panel did not move and
+     nothing rattles.
+7. **Run the full check** — [Check that Lila works](#check-that-lila-works)
+   end to end on the finished assistant.
 
 ## Check that Lila works
 
@@ -269,8 +403,9 @@ build.
 | `idf.py: command not found` | the environment is not loaded | run `. ~/esp-idf/export.sh` (or the PowerShell script) in that terminal |
 | `A custom wake word requires ESP32-S3/S31/P4` | the wake word is `custom:<word>` on another chip | use a WakeNet model or `disabled` on other targets |
 | The screen stays black | wrong panel symbol or wrong SPI mode | check `LILA_DISPLAY` against your module: 7-pin means `LCD_ST7789_240X240_7PIN` |
+| The screen lights up but shows nothing | display wired to the wrong pins | check BLK, SDA, SCL, DC and RES against the display table above |
 | The screen shows garbage | SPI mode or wiring mismatch | 7-pin modules use mode 3; modules with CS use mode 0 |
-| No sound | speaker not connected, or wrong I2S pins | check the speaker pins in the table above and the amplifier |
+| No sound | speaker not connected, or wrong speaker output | check the speaker wiring above and that both wires reach the board's speaker output |
 | The port disappears while flashing | the board reboots into the bootloader | press **BOOT**, tap **RESET**, release **BOOT**, then flash again |
 | The build is very slow the first time | dependencies are being downloaded | let it finish; later builds are cached |
 | `web.search` does not exist | no Tavily key at build time | set `LILA_TAVILY_API_KEY` in `.env` and rebuild |
