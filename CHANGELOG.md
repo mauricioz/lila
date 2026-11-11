@@ -10,6 +10,36 @@ what it changes on top of the upstream baseline. Lila versions are independent o
 the upstream `PROJECT_VER` in `CMakeLists.txt` (currently `2.5.3`); the Lila
 version is the release tag and the heading below.
 
+## [0.3.0] - 2026-11-10
+
+The documentation release: Lila in Spanish, a home for the 3D-print files and a
+step-by-step guide from an empty machine to a working device.
+
+### Added
+
+- `README.es.md`: the Spanish front page, with a language switcher in both
+  files.
+- `docs/lila-build-guide.md` and `docs/lila-build-guide.es.md`: the guide from
+  installing ESP-IDF on Windows, Linux or macOS to configuring `.env`, building,
+  flashing, printing the case and assembling it.
+- `STL/`: the home of the `.stl` files of the Lila case, with a bilingual index
+  (`STL/README.md`, `STL/README.es.md`) that names the target hardware, the
+  naming convention, the print settings and the files still to come.
+- `scripts/check_workflow.py`: `check_translations()` and `check_stl_index()`,
+  so a missing translation, a broken language switcher or a section that only
+  exists in one language fails the pull request.
+
+### Changed
+
+- `README.md` and `README.es.md` link to the build guide and the 3D-print
+  index.
+- `process/standards/docs.md`: DOC-2 now separates the upstream translations
+  (not mirrored) from Lila's own translations (maintained here), and DOC-16 and
+  DOC-17 define the translation and 3D-print rules.
+- `process/ROADMAP.md`: v0.3.0 is the documentation release; the planned
+  quality/automation and product milestones move to v0.4.0 and v0.5.0.
+- `main/boards/wk-esp32s3-dev/README.md` links the guide and the STL index.
+
 ## [0.2.0] - 2026-11-10
 
 The development workflow release: specs, standards, skills, and CI.

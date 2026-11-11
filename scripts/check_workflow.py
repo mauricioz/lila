@@ -97,6 +97,20 @@ README_FORBIDDEN = [
     "README_ja.md",
 ]
 
+# Every document Lila translates ships in both languages. The Spanish file
+# lives next to the English one with the `.es.md` suffix.
+TRANSLATION_PAIRS = [
+    ("README.md", "README.es.md"),
+    ("docs/lila-build-guide.md", "docs/lila-build-guide.es.md"),
+    ("STL/README.md", "STL/README.es.md"),
+]
+
+STL_MARKERS = [
+    "wk-esp32s3-dev",
+    "ST7789",
+    ".stl",
+]
+
 AGENTS_MARKERS = [
     "process/WORKFLOW.md",
     "process/standards/security.md",
@@ -170,6 +184,7 @@ SKIP_SUFFIXES = {
     ".png",
     ".pyc",
     ".so",
+    ".stl",
     ".ttf",
     ".wav",
     ".webp",
@@ -365,6 +380,56 @@ def check_pr_target_rule(root: Path) -> list[str]:
     return problems
 
 
+def check_translations(root: Path) -> list[str]:
+    """Every translated document exists, cross-links and keeps the same sections.
+
+    The number of `##` sections is the cheap mechanical proxy for "the
+    translation still covers the original": a new section in one language and
+    not in the other fails the pull request.
+    """
+    problems: list[str] = []
+    for english, spanish in TRANSLATION_PAIRS:
+        english_path = root / english
+        spanish_path = root / spanish
+        if not english_path.is_file():
+            problems.append(f"missing required file: {english}")
+            continue
+        if not spanish_path.is_file():
+            problems.append(f"missing required file: {spanish}")
+            continue
+
+        english_text = read_text(english_path)
+        spanish_text = read_text(spanish_path)
+        # The pair always lives in the same folder, so the switcher links the
+        # sibling by file name.
+        if Path(spanish).name not in english_text:
+            problems.append(f"{english} must link to {spanish}")
+        if Path(english).name not in spanish_text:
+            problems.append(f"{spanish} must link to {english}")
+
+        english_sections = english_text.count("\n## ")
+        spanish_sections = spanish_text.count("\n## ")
+        if english_sections != spanish_sections:
+            problems.append(
+                f"{spanish} must have the same sections as {english} "
+                f"({spanish_sections} != {english_sections})"
+            )
+    return problems
+
+
+def check_stl_index(root: Path) -> list[str]:
+    """The 3D-print folder is indexed and names the hardware it targets."""
+    path = root / "STL" / "README.md"
+    if not path.is_file():
+        return ["missing STL/README.md"]
+    content = read_text(path)
+    return [
+        f"STL/README.md must mention {marker!r}"
+        for marker in STL_MARKERS
+        if marker not in content
+    ]
+
+
 def check_pinned_formatter(root: Path) -> list[str]:
     """The CI, the checker and the standard must pin the same clang-format."""
     script = root / "scripts" / "check_format.py"
@@ -397,6 +462,11 @@ def check_links(root: Path) -> list[str]:
     documents = list((root / "process").rglob("*.md"))
     for name in (
         "README.md",
+        "README.es.md",
+        "docs/lila-build-guide.md",
+        "docs/lila-build-guide.es.md",
+        "STL/README.md",
+        "STL/README.es.md",
         ".github/PULL_REQUEST_TEMPLATE.md",
         ".github/BRANCH_PROTECTION.md",
     ):
@@ -444,6 +514,8 @@ def run_checks(root: Path) -> list[str]:
     problems.extend(check_env_not_tracked(root))
     problems.extend(check_markers(root))
     problems.extend(check_readme(root))
+    problems.extend(check_translations(root))
+    problems.extend(check_stl_index(root))
     problems.extend(check_pr_target_rule(root))
     problems.extend(check_pinned_formatter(root))
     problems.extend(check_links(root))
@@ -473,7 +545,7 @@ def main(argv: list[str] | None = None) -> int:
     print(
         "Workflow check passed: "
         f"{len(REQUIRED_FILES)} required files, links, .env policy, "
-        f"roadmap, skills and secret scan."
+        f"roadmap, translations, STL index, skills and secret scan."
     )
     return 0
 

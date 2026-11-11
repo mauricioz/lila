@@ -94,6 +94,17 @@ python scripts/build.py wk-esp32s3-dev --name wk-esp32s3-dev \
   --sdkconfig CONFIG_CUSTOM_WAKE_WORD_THRESHOLD=15
 ```
 
+### Build guide and 3D-print case
+
+A step-by-step guide takes a new machine from an empty folder to a working
+Lila: installing ESP-IDF, configuring `.env`, building, flashing, printing the
+case and assembling it.
+
+| Guide | English | Spanish |
+| --- | --- | --- |
+| Build, flash, print and assemble | [`docs/lila-build-guide.md`](../../../docs/lila-build-guide.md) | [`docs/lila-build-guide.es.md`](../../../docs/lila-build-guide.es.md) |
+| 3D-print files (`.stl`) | [`STL/README.md`](../../../STL/README.md) | [`STL/README.es.md`](../../../STL/README.es.md) |
+
 ### Optional MCP tools
 
 Both tools are compiled in only when their Kconfig strings are non-empty, so a
