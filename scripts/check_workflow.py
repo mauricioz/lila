@@ -103,7 +103,38 @@ TRANSLATION_PAIRS = [
     ("README.md", "README.es.md"),
     ("docs/lila-build-guide.md", "docs/lila-build-guide.es.md"),
     ("STL/README.md", "STL/README.es.md"),
+    ("docs/variants/README.md", "docs/variants/README.es.md"),
+    ("docs/variants/circular-display.md", "docs/variants/circular-display.es.md"),
+    ("docs/variants/speaker.md", "docs/variants/speaker.es.md"),
 ]
+
+# The variation folder: one chooser plus one page per build variation. Every
+# page follows the same sections, in the same order, so two variations can be
+# compared side by side; check_variants() enforces it in both languages.
+VARIANTS_DIR = "docs/variants"
+
+VARIANT_TEMPLATE_EN = [
+    "What's different",
+    "BOM delta",
+    "Configure",
+    "Print and assemble",
+    "Status and verification",
+]
+
+VARIANT_TEMPLATE_ES = [
+    "Qué cambia",
+    "Cambio en la lista de compra",
+    "Configurar",
+    "Imprimir y montar",
+    "Estado y verificación",
+]
+
+# How a page declares the process category of its variation: `config` needs
+# only a .env line, `parts` only a different purchase, `variant` firmware and
+# its own FEAT (which the page must then name).
+VARIANT_TYPE_RE = re.compile(
+    r"^\*\*(?:Type|Tipo):\*\* `(config|parts|variant)`", re.MULTILINE
+)
 
 STL_MARKERS = [
     "wk-esp32s3-dev",
@@ -430,6 +461,151 @@ def check_stl_index(root: Path) -> list[str]:
     ]
 
 
+def variant_pages(root: Path) -> list[Path]:
+    """The English variation pages: ``docs/variants/<variation>.md``."""
+    folder = root / VARIANTS_DIR
+    if not folder.is_dir():
+        return []
+    return sorted(
+        path
+        for path in folder.glob("*.md")
+        if path.name != "README.md" and not path.name.endswith(".es.md")
+    )
+
+
+def markdown_sections(text: str) -> list[str]:
+    """The ``##`` headings of a document, in order."""
+    return [line[3:].strip() for line in text.splitlines() if line.startswith("## ")]
+
+
+def check_variants(root: Path) -> list[str]:
+    """Variation pages follow one template and agree with the chooser.
+
+    The chooser and the pages must link each other in both languages, every
+    page must carry the fixed sections of its language in order plus a type
+    line, and every pair must be registered in ``TRANSLATION_PAIRS`` so the
+    translation checks cover it. A page of type ``variant`` must name the
+    ``FEAT_XXX`` that implements it.
+    """
+    problems: list[str] = []
+    chooser_en_path = root / VARIANTS_DIR / "README.md"
+    chooser_es_path = root / VARIANTS_DIR / "README.es.md"
+    if not chooser_en_path.is_file():
+        return [f"missing {VARIANTS_DIR}/README.md"]
+    if not chooser_es_path.is_file():
+        problems.append(f"missing {VARIANTS_DIR}/README.es.md")
+
+    chooser_en = read_text(chooser_en_path)
+    chooser_es = read_text(chooser_es_path) if chooser_es_path.is_file() else ""
+
+    # The chooser sends the reader back to the default build first: the
+    # guide stays the single canonical document.
+    if "](../lila-build-guide.md)" not in chooser_en:
+        problems.append(f"{VARIANTS_DIR}/README.md must link ../lila-build-guide.md")
+    if "](../lila-build-guide.es.md)" not in chooser_es:
+        problems.append(
+            f"{VARIANTS_DIR}/README.es.md must link ../lila-build-guide.es.md"
+        )
+
+    for page in variant_pages(root):
+        english_name = page.name
+        spanish_name = english_name[: -len(".md")] + ".es.md"
+        relative = f"{VARIANTS_DIR}/{english_name}"
+        english_text = read_text(page)
+        spanish_path = page.with_name(spanish_name)
+
+        if not spanish_path.is_file():
+            problems.append(f"{relative} must have a Spanish sibling {spanish_name}")
+        else:
+            pair = (f"{VARIANTS_DIR}/{english_name}", f"{VARIANTS_DIR}/{spanish_name}")
+            if pair not in TRANSLATION_PAIRS:
+                problems.append(
+                    f"the pair {english_name} / {spanish_name} "
+                    "must be listed in TRANSLATION_PAIRS"
+                )
+
+        if markdown_sections(english_text) != VARIANT_TEMPLATE_EN:
+            problems.append(
+                f"{relative} must follow the variant template with the sections "
+                f"{VARIANT_TEMPLATE_EN} "
+                f"(found {markdown_sections(english_text)})"
+            )
+
+        type_match = VARIANT_TYPE_RE.search(english_text)
+        if type_match is None:
+            problems.append(
+                f"{relative} must declare its type: "
+                "**Type:** `config`, `parts` or `variant`"
+            )
+        elif type_match.group(1) == "variant" and not re.search(
+            r"FEAT_\d{3}", english_text
+        ):
+            problems.append(
+                f"{relative} declares type `variant` and must name the "
+                "FEAT_XXX that implements it"
+            )
+
+        if f"]({english_name})" not in chooser_en:
+            problems.append(f"{VARIANTS_DIR}/README.md must link {english_name}")
+        if "](README.md)" not in english_text:
+            problems.append(f"{relative} must link {VARIANTS_DIR}/README.md")
+
+        if not spanish_path.is_file():
+            continue
+        spanish_relative = f"{VARIANTS_DIR}/{spanish_name}"
+        spanish_text = read_text(spanish_path)
+
+        if markdown_sections(spanish_text) != VARIANT_TEMPLATE_ES:
+            problems.append(
+                f"{spanish_relative} must follow the variant template with the "
+                f"sections {VARIANT_TEMPLATE_ES} "
+                f"(found {markdown_sections(spanish_text)})"
+            )
+
+        spanish_type_match = VARIANT_TYPE_RE.search(spanish_text)
+        if spanish_type_match is None:
+            problems.append(
+                f"{spanish_relative} must declare its type: "
+                "**Tipo:** `config`, `parts` or `variant`"
+            )
+        elif type_match is not None and spanish_type_match.group(1) != type_match.group(
+            1
+        ):
+            problems.append(
+                f"{relative} and {spanish_name} must declare the same type"
+            )
+
+        if f"]({spanish_name})" not in chooser_es:
+            problems.append(f"{VARIANTS_DIR}/README.es.md must link {spanish_name}")
+        if "](README.es.md)" not in spanish_text:
+            problems.append(f"{spanish_relative} must link {VARIANTS_DIR}/README.es.md")
+
+    folder = root / VARIANTS_DIR
+    if folder.is_dir():
+        # A Spanish page without its English original is an orphan.
+        for path in sorted(folder.glob("*.es.md")):
+            if path.name == "README.es.md":
+                continue
+            english_name = path.name[: -len(".es.md")] + ".md"
+            if not (folder / english_name).is_file():
+                problems.append(
+                    f"{VARIANTS_DIR}/{path.name} has no English original "
+                    f"{english_name}"
+                )
+        # Every same-folder link in the chooser must resolve.
+        for chooser_path, chooser_text in (
+            (chooser_en_path, chooser_en),
+            (chooser_es_path, chooser_es),
+        ):
+            for target in re.findall(r"\]\(([^)#\s]+\.md)\)", chooser_text):
+                if target.startswith(("http://", "https://", "..", "/")):
+                    continue
+                if not (folder / target).is_file():
+                    relative = chooser_path.relative_to(root).as_posix()
+                    problems.append(f"{relative} links a missing file {target}")
+    return problems
+
+
 def check_pinned_formatter(root: Path) -> list[str]:
     """The CI, the checker and the standard must pin the same clang-format."""
     script = root / "scripts" / "check_format.py"
@@ -516,6 +692,7 @@ def run_checks(root: Path) -> list[str]:
     problems.extend(check_readme(root))
     problems.extend(check_translations(root))
     problems.extend(check_stl_index(root))
+    problems.extend(check_variants(root))
     problems.extend(check_pr_target_rule(root))
     problems.extend(check_pinned_formatter(root))
     problems.extend(check_links(root))
@@ -545,7 +722,7 @@ def main(argv: list[str] | None = None) -> int:
     print(
         "Workflow check passed: "
         f"{len(REQUIRED_FILES)} required files, links, .env policy, "
-        f"roadmap, translations, STL index, skills and secret scan."
+        f"roadmap, translations, STL index, variants, skills and secret scan."
     )
     return 0
 

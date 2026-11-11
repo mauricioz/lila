@@ -13,6 +13,11 @@ son los de los scripts de este repositorio, pero la impresión y el flasheo no
 los ejecutó quien escribió estas líneas. Todo lo marcado como *sin verificar*
 necesita una placa real.
 
+Esta guía es la construcción por defecto. Una pantalla circular o un altavoz
+diferente es una [variación de construcción](variants/README.es.md): cada
+página de variación indica solo lo que cambia respecto a esta guía, con la
+misma estructura, y esta guía sigue siendo canónica.
+
 | Paso | Resultado |
 | --- | --- |
 | [Lista de compra](#lista-de-compra) | cada parte que comprar, con especificación y cantidad |
@@ -425,6 +430,7 @@ nuevo.
 | Buscas | Ve a |
 | --- | --- |
 | Esta guía en inglés | [`lila-build-guide.md`](lila-build-guide.md) |
+| Variaciones de construcción (pantalla redonda, otro altavoz) | [`variants/README.es.md`](variants/README.es.md) |
 | La portada de Lila | [`README.es.md`](../README.es.md) (inglés: [`README.md`](../README.md)) |
 | El índice de impresión 3D | [`STL/README.es.md`](../STL/README.es.md) |
 | Documentación de la placa | [`main/boards/wk-esp32s3-dev/README.md`](../main/boards/wk-esp32s3-dev/README.md) |

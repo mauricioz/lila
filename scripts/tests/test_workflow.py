@@ -198,6 +198,192 @@ class StlIndexTests(unittest.TestCase):
         self.assertIn(".stl", check_workflow.SKIP_SUFFIXES)
 
 
+class VariantTests(unittest.TestCase):
+    """docs/variants: one template, one chooser, both languages."""
+
+    @staticmethod
+    def write_fixture(root: Path) -> None:
+        """A minimal variation folder that satisfies every variant rule."""
+        folder = root / "docs" / "variants"
+        folder.mkdir(parents=True)
+        (folder / "README.md").write_text(
+            "# Build variations\n\n"
+            "Start with the [default build](../lila-build-guide.md).\n\n"
+            "| Variation |\n"
+            "| --- |\n"
+            "| [Demo](demo.md) |\n",
+            encoding="utf-8",
+        )
+        (folder / "README.es.md").write_text(
+            "# Variaciones\n\n"
+            "Empieza por la [construcción por defecto](../lila-build-guide.es.md).\n\n"
+            "| Variación |\n"
+            "| --- |\n"
+            "| [Demo](demo.es.md) |\n",
+            encoding="utf-8",
+        )
+        english_sections = "\n\n".join(
+            f"## {heading}\n\nBody." for heading in check_workflow.VARIANT_TEMPLATE_EN
+        )
+        (folder / "demo.md").write_text(
+            "# Demo variation\n\n"
+            "**English** · [Español](demo.es.md)\n\n"
+            "**Type:** `config`\n\n"
+            f"{english_sections}\n\n"
+            "Back to the [chooser](README.md).\n",
+            encoding="utf-8",
+        )
+        spanish_sections = "\n\n".join(
+            f"## {heading}\n\nTexto." for heading in check_workflow.VARIANT_TEMPLATE_ES
+        )
+        (folder / "demo.es.md").write_text(
+            "# Variación demo\n\n"
+            "**Español** · [English](demo.md)\n\n"
+            "**Tipo:** `config`\n\n"
+            f"{spanish_sections}\n\n"
+            "Vuelve al [selector](README.es.md).\n",
+            encoding="utf-8",
+        )
+
+    @staticmethod
+    def registered_pairs():
+        return check_workflow.TRANSLATION_PAIRS + [
+            ("docs/variants/README.md", "docs/variants/README.es.md"),
+            ("docs/variants/demo.md", "docs/variants/demo.es.md"),
+        ]
+
+    def test_repository_variant_pages_follow_the_template(self):
+        self.assertEqual(check_workflow.check_variants(ROOT), [])
+
+    def test_valid_variant_folder_passes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write_fixture(root)
+            original = check_workflow.TRANSLATION_PAIRS
+            check_workflow.TRANSLATION_PAIRS = self.registered_pairs()
+            try:
+                problems = check_workflow.check_variants(root)
+            finally:
+                check_workflow.TRANSLATION_PAIRS = original
+        self.assertEqual(problems, [])
+
+    def test_missing_chooser_is_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            problems = check_workflow.check_variants(Path(tmp))
+        self.assertEqual(problems, ["missing docs/variants/README.md"])
+
+    def test_missing_spanish_page_is_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write_fixture(root)
+            (root / "docs" / "variants" / "demo.es.md").unlink()
+            problems = check_workflow.check_variants(root)
+        self.assertTrue(
+            any("must have a Spanish sibling demo.es.md" in p for p in problems)
+        )
+
+    def test_unregistered_pair_is_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write_fixture(root)
+            problems = check_workflow.check_variants(root)
+        self.assertTrue(any("TRANSLATION_PAIRS" in p for p in problems))
+
+    def test_wrong_template_is_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write_fixture(root)
+            page = root / "docs" / "variants" / "demo.md"
+            page.write_text(
+                "# Demo\n\n**Type:** `config`\n\n## Configure\n\nBody.\n",
+                encoding="utf-8",
+            )
+            problems = check_workflow.check_variants(root)
+        self.assertTrue(any("variant template" in p for p in problems))
+
+    def test_page_missing_from_the_matrix_is_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write_fixture(root)
+            chooser = root / "docs" / "variants" / "README.md"
+            chooser.write_text(
+                chooser.read_text(encoding="utf-8").replace("](demo.md)", "]"),
+                encoding="utf-8",
+            )
+            problems = check_workflow.check_variants(root)
+        self.assertTrue(
+            any("README.md must link demo.md" in p for p in problems)
+        )
+
+    def test_dead_matrix_link_is_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write_fixture(root)
+            chooser = root / "docs" / "variants" / "README.md"
+            chooser.write_text(
+                chooser.read_text(encoding="utf-8") + "| [Ghost](ghost.md) |\n",
+                encoding="utf-8",
+            )
+            problems = check_workflow.check_variants(root)
+        self.assertTrue(any("links a missing file ghost.md" in p for p in problems))
+
+    def test_missing_type_line_is_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write_fixture(root)
+            page = root / "docs" / "variants" / "demo.md"
+            page.write_text(
+                page.read_text(encoding="utf-8").replace("**Type:** `config`\n", ""),
+                encoding="utf-8",
+            )
+            problems = check_workflow.check_variants(root)
+        self.assertTrue(any("must declare its type" in p for p in problems))
+
+    def test_variant_type_requires_a_feat_reference(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write_fixture(root)
+            page = root / "docs" / "variants" / "demo.md"
+            page.write_text(
+                page.read_text(encoding="utf-8").replace(
+                    "**Type:** `config`", "**Type:** `variant`"
+                ),
+                encoding="utf-8",
+            )
+            problems = check_workflow.check_variants(root)
+        self.assertTrue(any("FEAT_XXX" in p for p in problems))
+
+    def test_type_must_match_across_languages(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write_fixture(root)
+            page = root / "docs" / "variants" / "demo.es.md"
+            page.write_text(
+                page.read_text(encoding="utf-8").replace(
+                    "**Tipo:** `config`", "**Tipo:** `parts`"
+                ),
+                encoding="utf-8",
+            )
+            problems = check_workflow.check_variants(root)
+        self.assertTrue(any("same type" in p for p in problems))
+
+    def test_spanish_chooser_must_link_the_spanish_page(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write_fixture(root)
+            chooser = root / "docs" / "variants" / "README.es.md"
+            chooser.write_text(
+                chooser.read_text(encoding="utf-8").replace(
+                    "](demo.es.md)", "]"
+                ),
+                encoding="utf-8",
+            )
+            problems = check_workflow.check_variants(root)
+        self.assertTrue(
+            any("README.es.md must link demo.es.md" in p for p in problems)
+        )
+
+
 class FormatBaseResolutionTests(unittest.TestCase):
     """A branch push must diff against the fork point, not the root commit.
 

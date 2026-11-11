@@ -28,17 +28,23 @@ step-by-step guide from an empty machine to a working device.
 - `STL/`: the home of the `.stl` files of the Lila case, with a bilingual index
   (`STL/README.md`, `STL/README.es.md`) that names the target hardware, the
   naming convention, the print settings and the files still to come.
-- `scripts/check_workflow.py`: `check_translations()` and `check_stl_index()`,
-  so a missing translation, a broken language switcher or a section that only
-  exists in one language fails the pull request.
+- `docs/variants/`: the build-variations chooser — one comparison matrix of
+  what each variation changes — plus the circular-display and speaker pages in
+  both languages, every page following the same five sections.
+- `scripts/check_workflow.py`: `check_translations()`, `check_stl_index()` and
+  `check_variants()`, so a missing translation, a broken language switcher, a
+  section that only exists in one language, a variation page that deviates
+  from the template or a chooser that disagrees with its pages fails the pull
+  request.
 
 ### Changed
 
-- `README.md` and `README.es.md` link to the build guide and the 3D-print
-  index.
+- `README.md` and `README.es.md` link to the build guide, the build-variations
+  chooser and the 3D-print index.
 - `process/standards/docs.md`: DOC-2 now separates the upstream translations
-  (not mirrored) from Lila's own translations (maintained here), and DOC-16 and
-  DOC-17 define the translation and 3D-print rules.
+  (not mirrored) from Lila's own translations (maintained here); DOC-16,
+  DOC-17 and DOC-18 define the translation, 3D-print and build-variation
+  rules, and the build guide links the chooser at the top.
 - `process/ROADMAP.md`: v0.3.0 is the documentation release; the planned
   quality/automation and product milestones move to v0.4.0 and v0.5.0.
 - `main/boards/wk-esp32s3-dev/README.md` links the guide and the STL index.

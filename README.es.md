@@ -83,6 +83,7 @@ imprimir la carcasa, y cablear y montarla con una comprobación tras cada paso.
 | Guía | Inglés | Español |
 | --- | --- | --- |
 | Compilar, flashear, imprimir y montar | [`docs/lila-build-guide.md`](docs/lila-build-guide.md) | [`docs/lila-build-guide.es.md`](docs/lila-build-guide.es.md) |
+| Variaciones de construcción (pantalla redonda, otro altavoz) | [`docs/variants/README.md`](docs/variants/README.md) | [`docs/variants/README.es.md`](docs/variants/README.es.md) |
 | Archivos para impresión 3D (`.stl`) | [`STL/README.md`](STL/README.md) | [`STL/README.es.md`](STL/README.es.md) |
 
 Los archivos `.stl` viven en [`STL/`](STL/). La carcasa está pensada para la

@@ -26,6 +26,7 @@ and its own variant, never an adapted copy of these.
 
 ```
 lila-<part>-<board>.stl
+lila-<part>-<board>-<variation>.stl
 ```
 
 | Part | Meaning |
@@ -36,8 +37,13 @@ lila-<part>-<board>.stl
 | `button` | a button cap |
 | `mount` | a stand, wall bracket or spacer |
 
-Example: `lila-case-wk-esp32s3-dev.stl`. Lower case, hyphens, the `.stl`
-extension, no spaces and no version numbers in the name.
+`<variation>` is a [`docs/variants/`](../docs/variants/) page name and only
+appears on geometry that fits that variation; the default set omits it.
+
+Example: `lila-case-wk-esp32s3-dev.stl`, or
+`lila-panel-wk-esp32s3-dev-circular-display.stl` for the round-screen
+bezel. Lower case, hyphens, the `.stl` extension, no spaces and no version
+numbers in the name.
 
 ## Files
 
