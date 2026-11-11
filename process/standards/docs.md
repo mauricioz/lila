@@ -52,7 +52,8 @@
 - **DOC-16** Every document Lila translates ships in both languages: the English
   file and a Spanish sibling with the `.es.md` suffix in the same folder
   (`README.md` / `README.es.md`, `docs/lila-build-guide.md` /
-  `docs/lila-build-guide.es.md`, `STL/README.md` / `STL/README.es.md`).
+  `docs/lila-build-guide.es.md`, `STL/README.md` / `STL/README.es.md`, and
+  every page under `docs/variants/` with its `.es.md` sibling).
   - Both files carry a language switcher that links the other one.
   - The Spanish file keeps the same section structure as the English one; a new
     section lands in both. `scripts/check_workflow.py` fails the pull request
@@ -60,11 +61,31 @@
   - Commands, file names, option names and error messages stay verbatim in the
     Spanish version; only the prose is translated.
 
+## Build variations
+
+- **DOC-18** Build variations live in `docs/variants/`: a chooser
+  (`README.md` / `README.es.md`) with one matrix row per variation, and one
+  page per variation (`<variation>.md` / `<variation>.es.md`).
+  - Only variations the repository supports today appear in the chooser; a
+    planned variation starts as its own `FEAT_XXX`, not as a row.
+  - Every page follows the fixed template sections of its language, in order
+    (`What's different` … `Status and verification`), and declares its type
+    (`config`, `parts` or `variant`) with a `**Type:**` line; a `variant`
+    page names the `FEAT_XXX` that implements it.
+  - The chooser and the pages link each other in both languages, and each
+    page links back to the default build guide, which stays the canonical
+    document.
+  - `scripts/check_workflow.py` fails the pull request when a page deviates
+    from the template, when the matrix and the pages disagree, or when a
+    pair is missing from `TRANSLATION_PAIRS`.
+
 ## 3D-print files
 
 - **DOC-17** The printable files of the Lila case live in `STL/`.
-  - One file per part, named `lila-<part>-<board>.stl`, lower case with
-    hyphens and no version number.
+  - One file per part, named `lila-<part>-<board>.stl` for the default set
+    and `lila-<part>-<board>-<variation>.stl` for a variation, where
+    `<variation>` is a `docs/variants/` page name; lower case with hyphens
+    and no version number.
   - Every file has a row in `STL/README.md` and in `STL/README.es.md`, with the
     print settings that worked for it.
   - The index names the exact hardware the geometry targets (board, panel,

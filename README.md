@@ -74,6 +74,7 @@ case, and wiring and assembling it with a checkpoint after every step.
 | Guide | English | Spanish |
 | --- | --- | --- |
 | Build, flash, print and assemble | [`docs/lila-build-guide.md`](docs/lila-build-guide.md) | [`docs/lila-build-guide.es.md`](docs/lila-build-guide.es.md) |
+| Build variations (round screen, other speaker) | [`docs/variants/README.md`](docs/variants/README.md) | [`docs/variants/README.es.md`](docs/variants/README.es.md) |
 | 3D-print files (`.stl`) | [`STL/README.md`](STL/README.md) | [`STL/README.es.md`](STL/README.es.md) |
 
 The `.stl` files live in [`STL/`](STL/). The case targets the `wk-esp32s3-dev`

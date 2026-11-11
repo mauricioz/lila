@@ -12,6 +12,10 @@ commands come from the scripts in this repository, but the printing and the
 flashing were not executed by the author of these lines. Anything marked
 *not verified* needs a real board.
 
+This guide is the default build. A round screen or a different speaker is a
+[build variation](variants/README.md): each variation page states only what
+differs from this guide, in the same shape, and this guide stays canonical.
+
 | Step | What you get |
 | --- | --- |
 | [Shopping list](#shopping-list) | every part to buy, with specification and quantity |
@@ -417,6 +421,7 @@ build.
 | Looking for | Go to |
 | --- | --- |
 | This guide in Spanish | [`lila-build-guide.es.md`](lila-build-guide.es.md) |
+| Build variations (round screen, other speaker) | [`variants/README.md`](variants/README.md) |
 | The Lila front page | [`README.md`](../README.md) (Español: [`README.es.md`](../README.es.md)) |
 | The 3D-print index | [`STL/README.md`](../STL/README.md) |
 | Board documentation | [`main/boards/wk-esp32s3-dev/README.md`](../main/boards/wk-esp32s3-dev/README.md) |

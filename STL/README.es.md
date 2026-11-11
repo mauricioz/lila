@@ -26,6 +26,7 @@ archivos y su propia variante, nunca una copia adaptada de estos.
 
 ```
 lila-<pieza>-<placa>.stl
+lila-<pieza>-<placa>-<variación>.stl
 ```
 
 | Pieza | Significado |
@@ -36,8 +37,14 @@ lila-<pieza>-<placa>.stl
 | `button` | pulsador |
 | `mount` | soporte de mesa, de pared o separador |
 
-Ejemplo: `lila-case-wk-esp32s3-dev.stl`. Minúsculas, guiones, extensión `.stl`,
-sin espacios y sin números de versión en el nombre.
+`<variación>` es el nombre de una página de
+[`docs/variants/`](../docs/variants/) y solo aparece en la geometría que
+encaja con esa variación; el set por defecto lo omite.
+
+Ejemplo: `lila-case-wk-esp32s3-dev.stl`, o
+`lila-panel-wk-esp32s3-dev-circular-display.stl` para el marco de pantalla
+redonda. Minúsculas, guiones, extensión `.stl`, sin espacios y sin números
+de versión en el nombre.
 
 ## Archivos
 
