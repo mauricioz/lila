@@ -820,6 +820,22 @@ choice WK_ESP32S3_DEV_DISPLAY_TYPE
 
 endchoice
 
+config WK_ESP32S3_DEV_MIC_GAIN
+    int "WK ESP32S3 DEV microphone input gain"
+    range 1 16
+    default 4
+    depends on BOARD_TYPE_WK_ESP32S3_DEV
+    help
+        Digital gain applied to the INMP441 samples before they reach the AFE.
+
+        The INMP441 delivers its 24 bit sample left aligned in a 32 bit I2S
+        slot, so the upstream conversion leaves the voice about 12 dB below
+        the level the wake word detector and the server ASR expect. The
+        default of 4 adds exactly those 12 dB.
+
+        Use 1 to disable the compensation, for example with a microphone that
+        already delivers a hot signal.
+
 choice DISPLAY_OLED_TYPE
     depends on BOARD_TYPE_BREAD_COMPACT_WIFI || BOARD_TYPE_BREAD_COMPACT_ML307 || BOARD_TYPE_BREAD_COMPACT_NT26 || BOARD_TYPE_BREAD_COMPACT_ESP32 || BOARD_TYPE_HU_087 || (BOARD_TYPE_WK_ESP32S3_DEV && WK_ESP32S3_DEV_DISPLAY_OLED)
     prompt "OLED Type"

@@ -200,6 +200,20 @@ The authoritative list needs no ESP-IDF:
 python scripts/build.py --list-languages
 ```
 
+### Microphone level
+
+The INMP441 is a quiet microphone: the firmware compensates it with a gain of 4
+(+12 dB), which is the default for this board and needs no configuration. If
+you use another microphone, or if Lila still hears nothing, change the gain —
+one line, applied to every value at once:
+
+```bash
+LILA_SDKCONFIG=CONFIG_WK_ESP32S3_DEV_MIC_GAIN=1   # no gain at all
+LILA_SDKCONFIG=CONFIG_WK_ESP32S3_DEV_MIC_GAIN=8   # +18 dB
+```
+
+The gain is between 1 and 16, and it is compiled in, so it needs a new build.
+
 ### Advanced — raw overrides and packaging
 
 ```bash
@@ -400,6 +414,10 @@ on the desk is much cheaper than debugging through a closed case.
 set in `.env` **before** the build. Changing `.env` later requires a new
 build.
 
+If the wake word never fires and Lila never answers, look at the microphone
+first: a level that is too low is the most common cause, and the gain
+(`CONFIG_WK_ESP32S3_DEV_MIC_GAIN`, 4 by default) is the knob to turn.
+
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
@@ -410,6 +428,7 @@ build.
 | The screen lights up but shows nothing | display wired to the wrong pins | check BLK, SDA, SCL, DC and RES against the display table above |
 | The screen shows garbage | SPI mode or wiring mismatch | 7-pin modules use mode 3; modules with CS use mode 0 |
 | No sound | speaker not connected, or wrong speaker output | check the speaker wiring above and that both wires reach the board's speaker output |
+| Lila hears nothing: the wake word never fires and it never answers | the microphone level is too low, or the microphone is miswired | check the INMP441 wiring (`SCK`, `WS`, `SD`, `L/R` to GND) and the gain (`CONFIG_WK_ESP32S3_DEV_MIC_GAIN`, 4 by default) |
 | The port disappears while flashing | the board reboots into the bootloader | press **BOOT**, tap **RESET**, release **BOOT**, then flash again |
 | The build is very slow the first time | dependencies are being downloaded | let it finish; later builds are cached |
 | `web.search` does not exist | no Tavily key at build time | set `LILA_TAVILY_API_KEY` in `.env` and rebuild |

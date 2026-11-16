@@ -446,6 +446,12 @@ private:
         });
     }
 
+    void InitializeAudioCodec() {
+        // The INMP441 is quiet: compensate the level so the AFE can detect
+        // speech and the server can transcribe it.
+        GetAudioCodec()->SetInputGain(CONFIG_WK_ESP32S3_DEV_MIC_GAIN);
+    }
+
     // 物联网初始化，添加对 AI 可见设备
     void InitializeTools() {
         static LampController lamp(LAMP_GPIO);
@@ -513,6 +519,7 @@ public:
 #endif
         InitializeButtons();
         InitializeTools();
+        InitializeAudioCodec();
 
     }
 

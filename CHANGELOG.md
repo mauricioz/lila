@@ -36,6 +36,21 @@ step-by-step guide from an empty machine to a working device.
   section that only exists in one language, a variation page that deviates
   from the template or a chooser that disagrees with its pages fails the pull
   request.
+- `CONFIG_WK_ESP32S3_DEV_MIC_GAIN`: a microphone input gain for the
+  `wk-esp32s3-dev` board, from 1 to 16 and 4 by default. The INMP441 delivers
+  its 24 bit sample left aligned in a 32 bit I2S slot, so the upstream
+  conversion left the voice about 12 dB below the level the wake word
+  detector and the server ASR expect. The default restores exactly those
+  12 dB.
+
+### Fixed
+
+- The voice loop of a Lila with an external INMP441: the AFE reported no
+  speech, the wake word never fired and the server never transcribed a
+  sentence. `NoAudioCodec::Read()` now applies the input gain that the codec
+  already supported for the PDM path, so the samples reach the AFE at about
+  -25 dBFS RMS instead of -37 dBFS. Boards that configure no gain keep their
+  current behaviour.
 
 ### Changed
 
