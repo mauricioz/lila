@@ -7,10 +7,11 @@ shopping list, the toolchain, a configured build, the firmware on the board,
 the printed case and the wired, assembled assistant. It targets the
 `wk-esp32s3-dev` board with the ST7789 240x240 screen — the Lila profile.
 
-The guide was written against the repository, not against a device: the
-commands come from the scripts in this repository, but the printing and the
-flashing were not executed by the author of these lines. Anything marked
-*not verified* needs a real board.
+The guide was written against the repository and then checked on a real
+board: the commands come from the scripts in this repository, and one Lila was
+assembled and flashed from them. What is marked *verified on hardware* was
+checked on that board; anything marked *not verified* still needs a real
+board.
 
 This guide is the default build. A round screen or a different speaker is a
 [build variation](variants/README.md): each variation page states only what
@@ -42,13 +43,20 @@ are what matter. The board is the only part the firmware is written for.
 | --- | --- | --- | --- |
 | Development board | `wk-esp32s3-dev` (ESP32-S3N16R8: 16 MB flash, 8 MB PSRAM) | 1 | the brain; the board README links the store page |
 | Display | ST7789 240x240, 7-pin SPI module: GND, VCC, SCL, SDA, RES, DC, BLK (no CS wire) | 1 | front of the case |
-| Speaker | 4 Ω, small enclosure speaker | 1 | inside the case, on the board's speaker output |
+| Speaker | 4 Ω or 8 Ω, small enclosure speaker (8 Ω 0.5 W verified) | 1 | inside the case, on the amplifier output |
+| Microphone | INMP441 I2S module: SCK, WS, SD, L/R, VDD, GND | 0 or 1 | external mic, replaces the on-board one |
+| Amplifier | MAX98357A I2S amplifier: LRC, BCLK, DIN, GAIN, SD, GND, VIN | 0 or 1 | external amp, replaces the on-board one |
+| Jumper wires and a breadboard | for the external modules | as needed | wiring the modules to the board headers |
 | USB-C cable | **data** cable, not charge-only | 1 | power and flashing |
 | Filament | PLA or PETG | 1 spool — a case uses a small fraction of it | the case ([print settings](../STL/README.md)) |
 | Case files | the `.stl` parts from [`STL/`](../STL/) | 1 set | printed by you or by a print service |
 
 A module with a CS wire also works: it changes one line of configuration
 ([the recipe](#display-module-with-a-cs-wire)), not the part list.
+
+The board carries a microphone and an amplifier, so the two external modules
+are optional. When you use them, they **replace** the on-board parts on the
+same I2S pins — they do not join them.
 
 ### Tools
 
@@ -273,6 +281,10 @@ look for in the log:
 - the board name and the Wi-Fi connection;
 - the wake word model in use (`Lila`, with the `custom:` prefix);
 - the display coming up — the backlight turns on and the face appears;
+- about ten seconds after the boot, a short "ding" (`success.ogg`) marks the
+  end of the activation, and the server voice reads the wake word hint; the
+  "ding" is the cheapest proof that the amplifier and the speaker are wired
+  correctly;
 - no URL in the log: the Lila HTTP helpers print a provider label such as
   `Telegram API` or `Tavily API`, never the request URL, so a bot token never
   reaches the log;
@@ -307,13 +319,19 @@ print as a prototype and adjust the slicer before asking for a new file.
 
 ## Assemble and wire
 
-The `wk-esp32s3-dev` carries the microphone, the amplifier, the buttons and
-the LED on the board. You wire exactly two things — the display and the
-speaker — and every pin value below is read from
+The `wk-esp32s3-dev` carries a microphone, an amplifier, the buttons and the
+LED on the board. You can use those, or wire external modules to the same I2S
+pins: the firmware drives one microphone input and one speaker output, so an
+external INMP441 or MAX98357A replaces the on-board part instead of joining
+it. Every pin value below is read from
 `main/boards/wk-esp32s3-dev/config.h`.
 
-*Not verified*: the tables come from the board configuration; the wiring was
-not checked on a physical board with this case.
+*Verified on hardware* (ESP32-S3 N16R8, INMP441, MAX98357A, ST7789 240x240,
+8 Ω 0.5 W speaker): the display, the speaker and the microphone all work. The
+tables below come from the board configuration and match that build. The
+verified build powered the amplifier from 3.3 V, enough for the boot "ding" at
+low volume; the table lists the module's rated 5 V. The case geometry is
+still *not verified*.
 
 ### Wiring the display
 
@@ -334,11 +352,53 @@ for this module that pin stays unconnected. A module that brings a CS wire
 out connects it to GPIO11 and builds with `LILA_DISPLAY=LCD_ST7789_240X240`
 — the SPI mode (3 vs 0) is the only difference between the two symbols.
 
+### Wiring an external microphone
+
+The INMP441 is an I2S microphone with a left/right latch: the firmware reads
+the **left** channel, so `L/R` goes to ground. A 100 nF capacitor between
+`L/R` and ground belongs to the module's filtering — some sellers ship it
+without one.
+
+| Module pin | Board pin | Signal |
+| --- | --- | --- |
+| SCK | GPIO42 | I2S clock |
+| WS | GPIO40 | word select (channel latch) |
+| SD | GPIO41 | data out |
+| L/R | GND | selects the left channel |
+| VDD | 3.3 V | power — **not** 5 V |
+| GND | GND | ground |
+
+Do not swap SCK and WS: with either of them crossed the microphone sends
+nothing at all.
+
+### Wiring an external amplifier
+
+The MAX98357A is an I2S amplifier. Its `LRC` line selects the channel, so the
+three I2S wires must not be crossed.
+
+| Module pin | Board pin | Signal |
+| --- | --- | --- |
+| BCLK | GPIO47 | I2S clock |
+| LRC | GPIO48 | word select (channel latch) |
+| DIN | GPIO21 | data in |
+| GAIN | leave unconnected | 12 dB default |
+| SD | leave unconnected | **grounding it mutes the amplifier** |
+| VIN | 5 V | power |
+| GND | GND | ground |
+
+`VIN` is a 5 V part. Powering it from 3.3 V works, but the output power drops
+to roughly a third, which can be inaudible with a small speaker. With an 8 Ω
+0.5 W speaker, use 5 V and keep the volume low, or set `GAIN` to its lowest
+step.
+
 ### Wiring the speaker
 
-Two wires from the speaker to the board's speaker output: the amplifier is on
-the board. The I2S link between the chip and that amplifier is fixed on the
-board and needs no wiring — it is listed for reference only:
+Two wires from the speaker to the amplifier output. With the on-board
+amplifier the speaker goes to the board's speaker output; with an
+[external amplifier](#wiring-an-external-amplifier) it goes to that module's
+`SPK+` and `SPK-`, never to ground. The I2S link between the chip and the
+on-board amplifier is fixed on the board and needs no wiring — it is listed
+for reference only:
 
 | Reference | Pin |
 | --- | --- |
@@ -350,9 +410,9 @@ board and needs no wiring — it is listed for reference only:
 
 | Function | Pin | Note |
 | --- | --- | --- |
-| Microphone WS | GPIO40 | on-board microphone |
-| Microphone SCK | GPIO42 | on-board microphone |
-| Microphone data | GPIO41 | on-board microphone |
+| Microphone WS | GPIO40 | on-board microphone, or the external INMP441 |
+| Microphone SCK | GPIO42 | on-board microphone, or the external INMP441 |
+| Microphone data | GPIO41 | on-board microphone, or the external INMP441 |
 | Boot button | GPIO0 | also enters the bootloader |
 | Volume up / down | GPIO38 / GPIO39 | |
 | Status LED | GPIO14 | |
@@ -371,10 +431,11 @@ on the desk is much cheaper than debugging through a closed case.
      in without force.
 3. **Connect the display** using the table above.
    - Checkpoint: power-cycle the board; the backlight turns on as soon as it
-     boots.
-4. **Connect the speaker** to the board's speaker output.
-   - Checkpoint: ask Lila anything; the answer is audible at normal volume,
-     with no crackle.
+     boots and the face appears.
+4. **Connect the microphone and the speaker** using the tables above.
+   - Checkpoint: at boot the device plays a short "ding" — that sound proves
+     the whole speaker path, from the I2S output to the amplifier and the
+     speaker. If it is silent, see [Troubleshooting](#troubleshooting).
 5. **Fit the screen into the panel** and route the wires so nothing is
    pinched.
    - Checkpoint: the face is centered in the opening and no wire is trapped
@@ -400,6 +461,23 @@ on the desk is much cheaper than debugging through a closed case.
 set in `.env` **before** the build. Changing `.env` later requires a new
 build.
 
+### What has been verified on hardware
+
+One Lila was assembled from the parts above and checked with the boot log on
+an ESP32-S3 N16R8 with an INMP441, a MAX98357A, an ST7789 240x240 and an 8 Ω
+0.5 W speaker:
+
+| Subsystem | Status | Evidence |
+| --- | --- | --- |
+| Boot and activation | verified | the log reaches `Activation done` and MQTT connects |
+| Display | verified | the ST7789 shows the face and the backlight comes on |
+| Speaker | verified | the `success.ogg` "ding" is audible at boot |
+| Microphone | verified | raw PCM captured over UDP: 6.3 s, -37 dBFS RMS, speech modulation |
+| Wake word | **not verified** | MultiNet ships English and Chinese models only; the test word `iris` is phonemised as /aɪɹəs/ ("EYE-russ") |
+| Server conversation | **not verified** | needs a live session with the assistant |
+| TTS voice | **not verified** | the voice is chosen in the server console, not in the firmware |
+| Case | **not verified** | the geometry in `STL/` is still being tuned |
+
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
@@ -409,7 +487,14 @@ build.
 | The screen stays black | wrong panel symbol or wrong SPI mode | check `LILA_DISPLAY` against your module: 7-pin means `LCD_ST7789_240X240_7PIN` |
 | The screen lights up but shows nothing | display wired to the wrong pins | check BLK, SDA, SCL, DC and RES against the display table above |
 | The screen shows garbage | SPI mode or wiring mismatch | 7-pin modules use mode 3; modules with CS use mode 0 |
-| No sound | speaker not connected, or wrong speaker output | check the speaker wiring above and that both wires reach the board's speaker output |
+| No sound at all, not even the "ding" | the amplifier is muted: `SD` is grounded | leave `SD` unconnected, and `GAIN` unconnected too |
+| The "ding" is faint or crackles | the amplifier runs from 3.3 V, or the speaker is too small for it | power `VIN` from 5 V and keep the volume low on an 8 Ω 0.5 W speaker |
+| The microphone never triggers | `L/R` is not grounded, so the module sends the right channel | `L/R` to ground, with the 100 nF capacitor to ground |
+| The microphone never triggers | `SCK` and `WS` are crossed | check GPIO42 (SCK) and GPIO40 (WS) |
+| The microphone never triggers | no common ground | every GND returns to the board's GND |
+| Nothing works and the breadboard feels flaky | unsoldered module pins | solder the modules to their headers; loose contacts are the most common failure |
+| The wake word is never detected | the model expects English phonemes | MultiNet has no Spanish model: pronounce the word with English phonemes |
+| BOOT shows "Escuchando" but no pip | expected behaviour | the pip belongs to the wake-word path; BOOT only opens the audio channel |
 | The port disappears while flashing | the board reboots into the bootloader | press **BOOT**, tap **RESET**, release **BOOT**, then flash again |
 | The build is very slow the first time | dependencies are being downloaded | let it finish; later builds are cached |
 | `web.search` does not exist | no Tavily key at build time | set `LILA_TAVILY_API_KEY` in `.env` and rebuild |

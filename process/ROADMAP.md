@@ -57,6 +57,8 @@ step-by-step guide from an empty machine to a working device.
 | 3D-print folder and index | ✅ | `STL/README.md`, `STL/README.es.md` (geometry pending) |
 | Build variations chooser and template pages (circular display, speaker) | ✅ | `docs/variants/` (six files), `check_variants` in `scripts/check_workflow.py` |
 | Translation parity enforced by CI | ✅ | `scripts/check_workflow.py` (`check_translations`), `scripts/tests/test_workflow.py` |
+| Hardware-validated guide: display, speaker and microphone verified on a real board | ✅ | `docs/lila-build-guide.md`, `docs/lila-build-guide.es.md` (status table), `process/specs/FEAT_007/` |
+| External INMP441 and MAX98357A wiring tables and audio troubleshooting rows | ✅ | `docs/lila-build-guide.md`, `docs/lila-build-guide.es.md` |
 
 ## 📋 v0.4.0 — Quality and automation
 

@@ -8,10 +8,11 @@ el firmware en la placa, la carcasa impresa y el asistente cableado y
 montado. Está escrita para la placa `wk-esp32s3-dev` con la pantalla ST7789
 de 240x240, que es el perfil de Lila.
 
-La guía se escribió sobre el repositorio, no sobre un dispositivo: los comandos
-son los de los scripts de este repositorio, pero la impresión y el flasheo no
-los ejecutó quien escribió estas líneas. Todo lo marcado como *sin verificar*
-necesita una placa real.
+La guía se escribió sobre el repositorio y después se comprobó sobre una
+placa real: los comandos son los de los scripts de este repositorio, y una
+Lila se montó y flasheó a partir de ellos. Lo marcado como *verificado en
+hardware* se comprobó en esa placa; todo lo marcado como *sin verificar*
+necesita todavía una placa real.
 
 Esta guía es la construcción por defecto. Una pantalla circular o un altavoz
 diferente es una [variación de construcción](variants/README.es.md): cada
@@ -45,13 +46,20 @@ la que está escrito el firmware.
 | --- | --- | --- | --- |
 | Placa de desarrollo | `wk-esp32s3-dev` (ESP32-S3N16R8: 16 MB de flash, 8 MB de PSRAM) | 1 | el cerebro; el README de la placa enlaza la tienda |
 | Pantalla | ST7789 240x240, módulo SPI de 7 pines: GND, VCC, SCL, SDA, RES, DC, BLK (sin hilo CS) | 1 | frente de la carcasa |
-| Altavoz | 4 Ω, altavoz pequeño para carcasa | 1 | dentro de la carcasa, en la salida de altavoz de la placa |
+| Altavoz | 4 Ω u 8 Ω, altavoz pequeño para carcasa (verificado con 8 Ω 0.5 W) | 1 | dentro de la carcasa, en la salida del amplificador |
+| Micrófono | módulo I2S INMP441: SCK, WS, SD, L/R, VDD, GND | 0 o 1 | micro externo, sustituye al de la placa |
+| Amplificador | amplificador I2S MAX98357A: LRC, BCLK, DIN, GAIN, SD, GND, VIN | 0 o 1 | amplificador externo, sustituye al de la placa |
+| Cables dupont y protoboard | para los módulos externos | los necesarios | cablear los módulos a las cabeceras de la placa |
 | Cable USB-C | cable de **datos**, no de solo carga | 1 | alimentación y flasheo |
 | Filamento | PLA o PETG | 1 rollo — una carcasa usa una fracción mínima | la carcasa ([ajustes de impresión](../STL/README.es.md)) |
 | Archivos de la carcasa | las piezas `.stl` de [`STL/`](../STL/) | 1 juego | los imprimes tú o un servicio de impresión |
 
 Un módulo con línea CS también funciona: cambia una línea de configuración
 ([la receta](#pantalla-con-línea-cs)), no la lista de partes.
+
+La placa ya lleva micrófono y amplificador, así que los dos módulos externos
+son opcionales. Si los usas, **sustituyen** a las piezas de la placa en los
+mismos pines I2S: no se conectan a la vez.
 
 ### Herramientas
 
@@ -279,6 +287,10 @@ activación. Qué buscar en el log:
 - el nombre de la placa y la conexión al Wi-Fi;
 - el modelo de palabra de activación en uso (`Lila`, con el prefijo `custom:`);
 - el arranque de la pantalla: se enciende la retroiluminación y aparece la cara;
+- unos diez segundos después del arranque, un "ding" corto (`success.ogg`)
+  marca el final de la activación y la voz del servidor lee el aviso de la
+  palabra de activación; el "ding" es la prueba más barata de que el
+  amplificador y el altavoz están bien cableados;
 - ninguna URL en el log: los helpers HTTP de Lila imprimen una etiqueta del
   proveedor, como `Telegram API` o `Tavily API`, nunca la URL de la petición,
   así que el token del bot nunca llega al log;
@@ -315,13 +327,19 @@ pedir un archivo nuevo.
 
 ## Montar y cablear
 
-La `wk-esp32s3-dev` lleva el micrófono, el amplificador, los botones y el LED
-en la propia placa. Tú cableas exactamente dos cosas — la pantalla y el
-altavoz — y cada valor de pin de abajo está leído de
+La `wk-esp32s3-dev` lleva un micrófono, un amplificador, los botones y el LED
+en la propia placa. Puedes usar esos, o cablear módulos externos a los mismos
+pines I2S: el firmware maneja una entrada de micrófono y una salida de
+altavoz, así que un INMP441 o un MAX98357A externo **sustituye** a la pieza
+de la placa en lugar de acompañarla. Cada valor de pin de abajo está leído de
 `main/boards/wk-esp32s3-dev/config.h`.
 
-*Sin verificar*: las tablas vienen de la configuración de la placa; el
-cableado no se comprobó en una placa física con esta carcasa.
+*Verificado en hardware* (ESP32-S3 N16R8, INMP441, MAX98357A, ST7789 240x240,
+altavoz de 8 Ω 0.5 W): la pantalla, el altavoz y el micrófono funcionan. Las
+tablas vienen de la configuración de la placa y coinciden con ese montaje. El
+montaje verificado alimentaba el amplificador a 3.3 V, suficiente para el
+"ding" de arranque a volumen bajo; la tabla indica los 5 V nominales del
+módulo. La geometría de la carcasa sigue *sin verificar*.
 
 ### Cableado de la pantalla
 
@@ -342,11 +360,53 @@ GPIO11, así que en este módulo ese pin queda sin conectar. Un módulo que saca
 un hilo CS lo conecta a GPIO11 y compila con `LILA_DISPLAY=LCD_ST7789_240X240`
 — el modo SPI (3 frente a 0) es la única diferencia entre los dos símbolos.
 
+### Cableado de un micrófono externo
+
+El INMP441 es un micrófono I2S con un selector de canal: el firmware lee el
+canal **izquierdo**, así que `L/R` va a masa. Entre `L/R` y masa pertenece un
+condensador de 100 nF del filtrado del módulo — algunos vendedores lo
+envían sin él.
+
+| Pin del módulo | Pin de la placa | Señal |
+| --- | --- | --- |
+| SCK | GPIO42 | reloj I2S |
+| WS | GPIO40 | word select (selector de canal) |
+| SD | GPIO41 | datos de salida |
+| L/R | GND | selecciona el canal izquierdo |
+| VDD | 3.3 V | alimentación — **no** 5 V |
+| GND | GND | masa |
+
+No cruces SCK y WS: con cualquiera de los dos cruzado el micrófono no manda
+absolutamente nada.
+
+### Cableado de un amplificador externo
+
+El MAX98357A es un amplificador I2S. Su línea `LRC` selecciona el canal, así
+que los tres hilos I2S no se cruzan.
+
+| Pin del módulo | Pin de la placa | Señal |
+| --- | --- | --- |
+| BCLK | GPIO47 | reloj I2S |
+| LRC | GPIO48 | word select (selector de canal) |
+| DIN | GPIO21 | datos de entrada |
+| GAIN | sin conectar | 12 dB por defecto |
+| SD | sin conectar | **conectarlo a masa silencia el amplificador** |
+| VIN | 5 V | alimentación |
+| GND | GND | masa |
+
+`VIN` es una entrada de 5 V. Alimentarla a 3.3 V funciona, pero la potencia de
+salida baja a un tercio, y con un altavoz pequeño puede quedar inaudible. Con
+un altavoz de 8 Ω 0.5 W, usa 5 V y baja el volumen, o pon `GAIN` en su escalón
+más bajo.
+
 ### Cableado del altavoz
 
-Dos hilos desde el altavoz hasta la salida de altavoz de la placa: el
-amplificador está en la placa. El enlace I2S entre el chip y ese amplificador
-está fijo en la placa y no necesita cableado — se lista solo como referencia:
+Dos hilos desde el altavoz hasta la salida del amplificador. Con el
+amplificador de la placa, el altavoz va a la salida de altavoz de la placa;
+con un [amplificador externo](#cableado-de-un-amplificador-externo) va a los
+`SPK+` y `SPK-` de ese módulo, nunca a masa. El enlace I2S entre el chip y el
+amplificador de la placa está fijo en la placa y no necesita cableado — se
+lista solo como referencia:
 
 | Referencia | Pin |
 | --- | --- |
@@ -358,9 +418,9 @@ está fijo en la placa y no necesita cableado — se lista solo como referencia:
 
 | Función | Pin | Nota |
 | --- | --- | --- |
-| WS del micrófono | GPIO40 | micrófono integrado |
-| SCK del micrófono | GPIO42 | micrófono integrado |
-| Datos del micrófono | GPIO41 | micrófono integrado |
+| WS del micrófono | GPIO40 | micrófono de la placa, o el INMP441 externo |
+| SCK del micrófono | GPIO42 | micrófono de la placa, o el INMP441 externo |
+| Datos del micrófono | GPIO41 | micrófono de la placa, o el INMP441 externo |
 | Botón de arranque | GPIO0 | también entra en el bootloader |
 | Volumen arriba / abajo | GPIO38 / GPIO39 | |
 | LED de estado | GPIO14 | |
@@ -380,10 +440,12 @@ la mesa es mucho más barato que depurar a través de una carcasa cerrada.
      entra sin fuerza.
 3. **Conecta la pantalla** con la tabla de arriba.
    - Comprobación: reinicia la placa; la retroiluminación se enciende en
-     cuanto arranca.
-4. **Conecta el altavoz** a la salida de altavoz de la placa.
-   - Comprobación: pídele cualquier cosa a Lila; se oye la respuesta a
-     volumen normal, sin crepitar.
+     cuanto arranca y aparece la cara.
+4. **Conecta el micrófono y el altavoz** con las tablas de arriba.
+   - Comprobación: al arrancar, el dispositivo suena un "ding" corto — ese
+     sonido demuestra todo el camino del altavoz, desde la salida I2S hasta el
+     amplificador y el altavoz. Si está en silencio, mira
+     [Problemas frecuentes](#problemas-frecuentes).
 5. **Coloca la pantalla en su marco** y enruta los hilos sin apretar ninguno.
    - Comprobación: la cara queda centrada en la abertura y ningún hilo queda
      atrapado entre el marco y el cuerpo.
@@ -409,6 +471,23 @@ la mesa es mucho más barato que depurar a través de una carcasa cerrada.
 en `.env` **antes** de compilar. Cambiar `.env` más tarde exige compilar de
 nuevo.
 
+### Qué se ha verificado en hardware
+
+Se montó una Lila con las partes de arriba y se comprobó con el log de
+arranque sobre un ESP32-S3 N16R8 con INMP441, MAX98357A, ST7789 240x240 y un
+altavoz de 8 Ω 0.5 W:
+
+| Subsistema | Estado | Evidencia |
+| --- | --- | --- |
+| Arranque y activación | verificado | el log llega a `Activation done` y MQTT se conecta |
+| Pantalla | verificado | el ST7789 muestra la cara y se enciende la retroiluminación |
+| Altavoz | verificado | el "ding" de `success.ogg` se oye al arrancar |
+| Micrófono | verificado | PCM crudo capturado por UDP: 6.3 s, -37 dBFS RMS, modulación de voz |
+| Palabra de activación | **sin verificar** | MultiNet solo trae modelos inglés y chino; la palabra de prueba `iris` se fonematiza como /aɪɹəs/ ("EYE-russ") |
+| Conversación con el servidor | **sin verificar** | necesita una sesión en vivo con el asistente |
+| Voz del TTS | **sin verificar** | la voz se elige en la consola del servidor, no en el firmware |
+| Carcasa | **sin verificar** | la geometría de `STL/` todavía se está ajustando |
+
 ## Problemas frecuentes
 
 | Síntoma | Causa probable | Solución |
@@ -418,7 +497,14 @@ nuevo.
 | La pantalla se queda negra | símbolo de panel equivocado o modo SPI equivocado | revisa `LILA_DISPLAY` según tu módulo: 7 pines es `LCD_ST7789_240X240_7PIN` |
 | La pantalla se enciende pero no muestra nada | la pantalla está cableada a pines equivocados | revisa BLK, SDA, SCL, DC y RES según la tabla de la pantalla de arriba |
 | La pantalla muestra caracteres raros | modo SPI o cableado que no cuadran | los módulos de 7 pines usan el modo 3; los que tienen CS, el modo 0 |
-| No hay sonido | altavoz sin conectar, o salida equivocada | revisa el cableado del altavoz de arriba y que los dos hilos lleguen a la salida de altavoz de la placa |
+| No hay ningún sonido, ni siquiera el "ding" | el amplificador está silenciado: `SD` está a masa | deja `SD` sin conectar, y `GAIN` también |
+| El "ding" se oye flojo o crepita | el amplificador funciona a 3.3 V, o el altavoz le queda grande | alimenta `VIN` a 5 V y baja el volumen con un altavoz de 8 Ω 0.5 W |
+| El micrófono nunca se activa | `L/R` no está a masa, así que el módulo manda el canal derecho | `L/R` a masa, con el condensador de 100 nF a masa |
+| El micrófono nunca se activa | `SCK` y `WS` están cruzados | revisa GPIO42 (SCK) y GPIO40 (WS) |
+| El micrófono nunca se activa | no hay masa común | todas las masas vuelven a la GND de la placa |
+| Nada funciona y la protoboard parece floja | pines de los módulos sin soldar | solda los módulos a sus cabeceras; los contactos flojos son el fallo más común |
+| La palabra de activación nunca se detecta | el modelo espera fonemas ingleses | MultiNet no tiene modelo en español: pronuncia la palabra con fonemas ingleses |
+| BOOT pone "Escuchando" pero no suena el pip | comportamiento esperado | el pip es del camino de la palabra de activación; BOOT solo abre el canal de audio |
 | El puerto desaparece al flashear | la placa reinicia en el bootloader | pulsa **BOOT**, toca **RESET**, suelta **BOOT** y flashea otra vez |
 | La primera compilación tarda muchísimo | se están descargando las dependencias | deja que termine; las siguientes usan la caché |
 | `web.search` no existe | no había clave de Tavily al compilar | pon `LILA_TAVILY_API_KEY` en `.env` y recompila |

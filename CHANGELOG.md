@@ -36,6 +36,15 @@ step-by-step guide from an empty machine to a working device.
   section that only exists in one language, a variation page that deviates
   from the template or a chooser that disagrees with its pages fails the pull
   request.
+- The build guide gained the wiring tables for external audio modules (INMP441
+  and MAX98357A) and the failure modes found on the bench: a muted amplifier
+  (`SD` grounded), an amplifier fed from 3.3 V, crossed `BCLK`/`LRC` or
+  `SCK`/`WS` pairs, a missing common ground, unsoldered module pins and the
+  English-only wake-word phonemes.
+- The build guide gained a verification table: the display, the speaker (the
+  boot "ding") and the microphone (raw PCM captured over UDP) are verified on
+  a real board, while the wake word, the server conversation, the TTS voice
+  and the case stay marked as not verified.
 
 ### Changed
 
@@ -48,6 +57,9 @@ step-by-step guide from an empty machine to a working device.
 - `process/ROADMAP.md`: v0.3.0 is the documentation release; the planned
   quality/automation and product milestones move to v0.4.0 and v0.5.0.
 - `main/boards/wk-esp32s3-dev/README.md` links the guide and the STL index.
+- `docs/lila-build-guide.md` and `docs/lila-build-guide.es.md`: the guide now
+  describes the on-board microphone and amplifier as replaceable by external
+  modules on the same I2S pins, instead of assuming the board's own parts.
 
 ## [0.2.0] - 2026-11-10
 
