@@ -248,8 +248,13 @@ int NoAudioCodec::Read(int16_t* dest, int samples) {
     }
 
     samples = bytes_read / sizeof(int32_t);
+    // The microphone delivers its 24 bit sample left aligned in a 32 bit I2S
+    // slot, so the >> 12 conversion below leaves the signal about 12 dB below
+    // the level the wake word detector and the server ASR expect. Apply the
+    // configured input gain here, with the same semantics as the PDM codec.
+    const int gain_factor = input_gain_ > 0 ? static_cast<int>(input_gain_) : 1;
     for (int i = 0; i < samples; i++) {
-        int32_t value = bit32_buffer[i] >> 12;
+        int32_t value = (bit32_buffer[i] >> 12) * gain_factor;
         dest[i] = (value > INT16_MAX) ? INT16_MAX : (value < -INT16_MAX) ? -INT16_MAX : (int16_t)value;
     }
     return samples;

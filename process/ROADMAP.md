@@ -57,6 +57,7 @@ step-by-step guide from an empty machine to a working device.
 | 3D-print folder and index | ✅ | `STL/README.md`, `STL/README.es.md` (geometry pending) |
 | Build variations chooser and template pages (circular display, speaker) | ✅ | `docs/variants/` (six files), `check_variants` in `scripts/check_workflow.py` |
 | Translation parity enforced by CI | ✅ | `scripts/check_workflow.py` (`check_translations`), `scripts/tests/test_workflow.py` |
+| Microphone input gain for the INMP441 (`CONFIG_WK_ESP32S3_DEV_MIC_GAIN`, default 4) | 🔄 | `main/audio/codecs/no_audio_codec.cc`, `main/Kconfig.projbuild`, `main/boards/wk-esp32s3-dev/wk-esp32s3-dev.cc` (hardware check pending) |
 
 ## 📋 v0.4.0 — Quality and automation
 

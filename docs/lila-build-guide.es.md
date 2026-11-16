@@ -205,6 +205,21 @@ La lista autoritativa no necesita ESP-IDF:
 python scripts/build.py --list-languages
 ```
 
+### Nivel del micrófono
+
+El INMP441 es un micrófono sordo: el firmware lo compensa con una ganancia de 4
+(+12 dB), que es el valor por defecto de esta placa y no necesita ninguna
+configuración. Si usas otro micrófono, o si Lila sigue sin oírte, cambia la
+ganancia — una sola línea, aplicada a todos los valores:
+
+```bash
+LILA_SDKCONFIG=CONFIG_WK_ESP32S3_DEV_MIC_GAIN=1   # sin ganancia
+LILA_SDKCONFIG=CONFIG_WK_ESP32S3_DEV_MIC_GAIN=8   # +18 dB
+```
+
+La ganancia va de 1 a 16 y va compilada dentro del firmware, así que necesita
+una compilación nueva.
+
 ### Avanzado — overrides en bruto y empaquetado
 
 ```bash
@@ -409,6 +424,11 @@ la mesa es mucho más barato que depurar a través de una carcasa cerrada.
 en `.env` **antes** de compilar. Cambiar `.env` más tarde exige compilar de
 nuevo.
 
+Si la palabra de activación nunca se dispara y Lila nunca responde, mira
+primero el micrófono: un nivel demasiado bajo es la causa más común, y la
+ganancia (`CONFIG_WK_ESP32S3_DEV_MIC_GAIN`, 4 por defecto) es la rueda que
+hay que girar.
+
 ## Problemas frecuentes
 
 | Síntoma | Causa probable | Solución |
@@ -419,6 +439,7 @@ nuevo.
 | La pantalla se enciende pero no muestra nada | la pantalla está cableada a pines equivocados | revisa BLK, SDA, SCL, DC y RES según la tabla de la pantalla de arriba |
 | La pantalla muestra caracteres raros | modo SPI o cableado que no cuadran | los módulos de 7 pines usan el modo 3; los que tienen CS, el modo 0 |
 | No hay sonido | altavoz sin conectar, o salida equivocada | revisa el cableado del altavoz de arriba y que los dos hilos lleguen a la salida de altavoz de la placa |
+| Lila no oye nada: la palabra de activación nunca se dispara y no responde | el nivel del micrófono es demasiado bajo, o el micrófono está mal cableado | revisa el cableado del INMP441 (`SCK`, `WS`, `SD`, `L/R` a GND) y la ganancia (`CONFIG_WK_ESP32S3_DEV_MIC_GAIN`, 4 por defecto) |
 | El puerto desaparece al flashear | la placa reinicia en el bootloader | pulsa **BOOT**, toca **RESET**, suelta **BOOT** y flashea otra vez |
 | La primera compilación tarda muchísimo | se están descargando las dependencias | deja que termine; las siguientes usan la caché |
 | `web.search` no existe | no había clave de Tavily al compilar | pon `LILA_TAVILY_API_KEY` en `.env` y recompila |
