@@ -102,8 +102,8 @@ Already performed on the bench (ESP32-S3 N16R8, INMP441, MAX98357A, ST7789
 - [x] Speaker: the `success.ogg` "ding" is audible at boot
 - [x] Microphone: raw PCM captured over UDP, 6.3 s, -37 dBFS RMS, speech
       modulation
-- [ ] Wake word: the MultiNet model is English-only; the test word `iris` is
-      phonemised as /aɪɹəs/ ("EYE-russ") and detection is still unproven
+- [ ] Wake word: the MultiNet model is English-only; the wake word `lila` is
+      phonemised as /liːlə/ ("LEE-luh") and detection is still unproven
 - [ ] Server conversation: STT and TTS round trip still unproven
 - [ ] TTS voice: chosen in the server console, not in the firmware
 - [ ] Case geometry: still being tuned
@@ -114,4 +114,7 @@ Already performed on the bench (ESP32-S3 N16R8, INMP441, MAX98357A, ST7789
   (`CONFIG_USE_AUDIO_DEBUGGER=y`), which streams raw PCM to a UDP listener; the
   capture is a local diagnostic, not a Lila feature.
 - The MultiNet model set ships English and Chinese only, so a Spanish wake
-  word is always phonemised with English rules.
+  word is always phonemised with English rules. `iris` became /aɪɹəs/
+  ("EYE-russ"), which no Spanish speaker says; `lila` becomes /liːlə/
+  ("LEE-luh"), which matches "LI-la" almost exactly, so the wake word moved
+  to `lila`.

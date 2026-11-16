@@ -39,8 +39,9 @@ skill_loaded: true (feature-pipeline, enrich-us, standards-injector)
 
 ## 4. Still open
 
-- [ ] Wake word detection with the English MultiNet model — needs a live
-      session on the bench
+- [ ] Wake word detection with the English MultiNet model — the wake word moved
+      from `iris` (/aɪɹəs/, "EYE-russ") to `lila` (/liːlə/, "LEE-luh"); needs a
+      live session on the bench
 - [ ] Server conversation (STT + TTS) and the TTS voice choice — the voice is
       selected in the server console
 - [ ] Case geometry — still being tuned

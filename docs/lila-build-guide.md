@@ -473,7 +473,7 @@ an ESP32-S3 N16R8 with an INMP441, a MAX98357A, an ST7789 240x240 and an 8 Ω
 | Display | verified | the ST7789 shows the face and the backlight comes on |
 | Speaker | verified | the `success.ogg` "ding" is audible at boot |
 | Microphone | verified | raw PCM captured over UDP: 6.3 s, -37 dBFS RMS, speech modulation |
-| Wake word | **not verified** | MultiNet ships English and Chinese models only; the test word `iris` is phonemised as /aɪɹəs/ ("EYE-russ") |
+| Wake word | **not verified** | MultiNet ships English and Chinese models only; the wake word `lila` is phonemised as /liːlə/ ("LEE-luh") |
 | Server conversation | **not verified** | needs a live session with the assistant |
 | TTS voice | **not verified** | the voice is chosen in the server console, not in the firmware |
 | Case | **not verified** | the geometry in `STL/` is still being tuned |
@@ -493,7 +493,7 @@ an ESP32-S3 N16R8 with an INMP441, a MAX98357A, an ST7789 240x240 and an 8 Ω
 | The microphone never triggers | `SCK` and `WS` are crossed | check GPIO42 (SCK) and GPIO40 (WS) |
 | The microphone never triggers | no common ground | every GND returns to the board's GND |
 | Nothing works and the breadboard feels flaky | unsoldered module pins | solder the modules to their headers; loose contacts are the most common failure |
-| The wake word is never detected | the model expects English phonemes | MultiNet has no Spanish model: pronounce the word with English phonemes |
+| The wake word is never detected | the model expects English phonemes | MultiNet has no Spanish model: pronounce the word with English phonemes, or lower the threshold with `LILA_SDKCONFIG=CONFIG_CUSTOM_WAKE_WORD_THRESHOLD=5` and rebuild |
 | BOOT shows "Escuchando" but no pip | expected behaviour | the pip belongs to the wake-word path; BOOT only opens the audio channel |
 | The port disappears while flashing | the board reboots into the bootloader | press **BOOT**, tap **RESET**, release **BOOT**, then flash again |
 | The build is very slow the first time | dependencies are being downloaded | let it finish; later builds are cached |

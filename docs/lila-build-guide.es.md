@@ -483,7 +483,7 @@ altavoz de 8 Ω 0.5 W:
 | Pantalla | verificado | el ST7789 muestra la cara y se enciende la retroiluminación |
 | Altavoz | verificado | el "ding" de `success.ogg` se oye al arrancar |
 | Micrófono | verificado | PCM crudo capturado por UDP: 6.3 s, -37 dBFS RMS, modulación de voz |
-| Palabra de activación | **sin verificar** | MultiNet solo trae modelos inglés y chino; la palabra de prueba `iris` se fonematiza como /aɪɹəs/ ("EYE-russ") |
+| Palabra de activación | **sin verificar** | MultiNet solo trae modelos inglés y chino; la palabra `lila` se fonematiza como /liːlə/ ("LEE-luh") |
 | Conversación con el servidor | **sin verificar** | necesita una sesión en vivo con el asistente |
 | Voz del TTS | **sin verificar** | la voz se elige en la consola del servidor, no en el firmware |
 | Carcasa | **sin verificar** | la geometría de `STL/` todavía se está ajustando |
@@ -503,7 +503,7 @@ altavoz de 8 Ω 0.5 W:
 | El micrófono nunca se activa | `SCK` y `WS` están cruzados | revisa GPIO42 (SCK) y GPIO40 (WS) |
 | El micrófono nunca se activa | no hay masa común | todas las masas vuelven a la GND de la placa |
 | Nada funciona y la protoboard parece floja | pines de los módulos sin soldar | solda los módulos a sus cabeceras; los contactos flojos son el fallo más común |
-| La palabra de activación nunca se detecta | el modelo espera fonemas ingleses | MultiNet no tiene modelo en español: pronuncia la palabra con fonemas ingleses |
+| La palabra de activación nunca se detecta | el modelo espera fonemas ingleses | MultiNet no tiene modelo en español: pronuncia la palabra con fonemas ingleses, o baja el umbral con `LILA_SDKCONFIG=CONFIG_CUSTOM_WAKE_WORD_THRESHOLD=5` y recompila |
 | BOOT pone "Escuchando" pero no suena el pip | comportamiento esperado | el pip es del camino de la palabra de activación; BOOT solo abre el canal de audio |
 | El puerto desaparece al flashear | la placa reinicia en el bootloader | pulsa **BOOT**, toca **RESET**, suelta **BOOT** y flashea otra vez |
 | La primera compilación tarda muchísimo | se están descargando las dependencias | deja que termine; las siguientes usan la caché |
