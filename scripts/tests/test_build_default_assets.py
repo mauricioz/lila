@@ -18,6 +18,13 @@ SPEC.loader.exec_module(BUILD)
 
 
 class BuildDefaultAssetsTest(unittest.TestCase):
+    def test_local_emoji_collection_is_used_before_noto_fonts(self):
+        path = BUILD.get_emoji_collection_path(
+            "lila-gif", str(ROOT / "components" / "noto-fonts"), project_root=str(ROOT)
+        )
+        self.assertEqual(Path(path), ROOT / "main" / "assets" / "emoji" / "lila-gif")
+        self.assertEqual(len(list(Path(path).glob("*.gif"))), 21)
+
     def test_text_font_metadata_uses_bundle_charset_size_and_bpp(self):
         with tempfile.TemporaryDirectory() as directory:
             assets = Path(directory)

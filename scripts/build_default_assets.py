@@ -853,10 +853,17 @@ def get_emoji_collection_path(default_emoji_collection, noto_fonts_path, project
     Supports:
     - PNG emoji collections from noto-fonts (e.g., noto-color-emoji_32)
     - Otto GIF emoji collection (otto-gif)
+    - Project-local collections under main/assets/emoji/<name>
     """
     if not default_emoji_collection:
         return None
-    
+
+    # Collections shipped inside the repository (Lila's own eye animations).
+    if project_root:
+        local_path = os.path.join(project_root, 'main', 'assets', 'emoji', default_emoji_collection)
+        if os.path.isdir(local_path):
+            return local_path
+
     # Special handling for otto-gif collection
     if default_emoji_collection == 'otto-gif':
         if project_root:

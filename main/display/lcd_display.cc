@@ -1175,6 +1175,24 @@ void LcdDisplay::ClearChatMessages() {
 }
 #endif
 
+void LcdDisplay::ApplyEmojiLayout(bool fullscreen) {
+#if CONFIG_USE_WECHAT_MESSAGE_STYLE
+    // The WeChat layout already centres emoji_box_ over the screen and stacks
+    // the chat bubbles above it, so there is no separate face mode.
+    (void)fullscreen;
+#else
+    if (emoji_image_ == nullptr) {
+        return;
+    }
+    // emoji_box_ is already centred and sits above the background container and
+    // below the status bars, so a panel-sized image needs no z-order change: it
+    // fills the screen behind the status text and the chat strip.
+    lv_obj_set_size(emoji_image_, fullscreen ? LV_HOR_RES : LV_SIZE_CONTENT,
+                    fullscreen ? LV_VER_RES : LV_SIZE_CONTENT);
+    lv_obj_center(emoji_image_);
+#endif
+}
+
 bool LcdDisplay::SetEmotion(const char* emotion) {
     if (!setup_ui_called_) {
         ESP_LOGW(TAG, "SetEmotion('%s') called before SetupUI() - emotion will not be displayed!",
@@ -1213,6 +1231,7 @@ bool LcdDisplay::SetEmotion(const char* emotion) {
         lv_label_set_text(emoji_label_, utf8);
         lv_obj_add_flag(emoji_image_, LV_OBJ_FLAG_HIDDEN);
         lv_obj_remove_flag(emoji_label_, LV_OBJ_FLAG_HIDDEN);
+        ApplyEmojiLayout(false);
         // The glyph is this emotion's own, from noto_emoji or material_symbols, not a
         // stand-in - so the request was honoured.
         return true;
@@ -1231,6 +1250,11 @@ bool LcdDisplay::SetEmotion(const char* emotion) {
         gif_controller_ = std::make_unique<LvglGif>(image->image_dsc());
 
         if (gif_controller_->IsLoaded()) {
+            // A collection whose frames cover the whole panel is treated as
+            // the device face; smaller GIFs stay next to the status bar.
+            auto gif_dsc = gif_controller_->image_dsc();
+            ApplyEmojiLayout(gif_dsc != nullptr && gif_dsc->header.w >= LV_HOR_RES);
+
             // Set up frame update callback
             gif_controller_->SetFrameCallback(
                 [this]() { lv_image_set_src(emoji_image_, gif_controller_->image_dsc()); });
@@ -1253,6 +1277,7 @@ bool LcdDisplay::SetEmotion(const char* emotion) {
         lv_image_set_src(emoji_image_, image->image_dsc());
         lv_obj_add_flag(emoji_label_, LV_OBJ_FLAG_HIDDEN);
         lv_obj_remove_flag(emoji_image_, LV_OBJ_FLAG_HIDDEN);
+        ApplyEmojiLayout(false);
         shown = true;
     }
 
