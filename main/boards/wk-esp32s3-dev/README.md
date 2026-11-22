@@ -94,6 +94,31 @@ python scripts/build.py wk-esp32s3-dev --name wk-esp32s3-dev \
   --sdkconfig CONFIG_CUSTOM_WAKE_WORD_THRESHOLD=15
 ```
 
+### Animated eyes
+
+This Lila build shows the emotions as 21 animated 240x240 GIFs instead of the
+stock 64 px still emoji. The collection lives in
+`main/assets/emoji/lila-gif/`: two eyes with long curved lashes, a violet iris
+and an eyeliner wing, drawn with seven colours so the whole set is about
+258 KiB. `main/CMakeLists.txt` selects it for this board together with the 16 px
+common font, which keeps the assets inside the 4 MB partition with about 279 KB
+to spare.
+
+The display treats a GIF whose decoded width reaches `LV_HOR_RES` as a
+full-screen face: it fills the panel, sits behind the status text and the
+battery popup, and keeps the small top line. Other boards and smaller
+collections keep the classic layout below the status bar.
+
+To change the design, edit the generator and rebuild the collection:
+
+```bash
+python -m pip install pillow
+python main/assets/emoji/lila-gif/generate_eyes.py
+```
+
+Hardware validation is still pending: the colours, the animation smoothness and
+the position of the status text need a check on the ST7789 panel.
+
 ### Build guide and 3D-print case
 
 A step-by-step guide takes a new machine from an empty folder to a working

@@ -53,6 +53,9 @@ public:
     // Add theme switching function
     virtual void SetTheme(Theme* theme) override;
 
+    // Full-screen emoji layout for large animated eye collections.
+    void ApplyEmojiLayout(bool fullscreen);
+
     // Set whether to hide chat messages/subtitles
     virtual void SetHideSubtitle(bool hide) override;
 };

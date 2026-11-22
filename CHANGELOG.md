@@ -36,6 +36,11 @@ step-by-step guide from an empty machine to a working device.
   section that only exists in one language, a variation page that deviates
   from the template or a chooser that disagrees with its pages fails the pull
   request.
+- `main/assets/emoji/lila-gif/`: 21 animated 240x240 eye emotions for Lila,
+  one per emotion the server sends, with a Pillow generator and a README that
+  documents the design and how to regenerate the collection. The eyes have
+  long curved lashes, an eyeliner wing and a violet iris, and the whole set is
+  about 258 KiB.
 
 ### Changed
 
@@ -48,6 +53,15 @@ step-by-step guide from an empty machine to a working device.
 - `process/ROADMAP.md`: v0.3.0 is the documentation release; the planned
   quality/automation and product milestones move to v0.4.0 and v0.5.0.
 - `main/boards/wk-esp32s3-dev/README.md` links the guide and the STL index.
+- The `wk-esp32s3-dev` build now packs the `lila-gif` collection and the 16 px
+  common font instead of the stock 64 px PNGs and the 20 px font. The display
+  renders a GIF as wide as the panel as a full-screen face behind the status
+  text, while smaller collections and every other board keep the classic
+  top-middle layout.
+- `scripts/build_default_assets.py` resolves an emoji collection name against
+  `main/assets/emoji/<name>` before the noto-fonts and `otto-gif` vendor
+  locations, so a collection shipped in this repository can be selected by
+  name.
 
 ## [0.2.0] - 2026-11-10
 
